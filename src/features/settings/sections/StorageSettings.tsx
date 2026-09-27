@@ -1,0 +1,142 @@
+import { useEffect, useState } from "react";
+import { FolderOpen, Loader2, MapPin } from "lucide-react";
+import { toast } from "sonner";
+import { open } from "@tauri-apps/plugin-dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useSettingsStore } from "@/stores/settingsStore";
+import {
+  ensureStorageDirs,
+  getDefaultStorageBase,
+  openInFileManager,
+} from "@/services/storage/storageService";
+import { STORAGE_SUBDIRS } from "@/lib/constants";
+import { Field, SectionHeader } from "../SettingsBits";
+import type { StorageInfo } from "@/types";
+
+export function StorageSettings() {
+  const basePath = useSettingsStore((s) => s.settings.storage.basePath);
+  const update = useSettingsStore((s) => s.update);
+  const [suggested, setSuggested] = useState<string>("");
+  const [info, setInfo] = useState<StorageInfo | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    getDefaultStorageBase().then(setSuggested).catch(() => setSuggested(""));
+  }, []);
+
+  const applyBasePath = async (path: string) => {
+    setBusy(true);
+    try {
+      const result = await ensureStorageDirs(path);
+      setInfo(result);
+      await update("storage", { basePath: result.basePath });
+      const created = result.dirs.filter((d) => d.created).length;
+      toast.success("Storage location configured", {
+        description:
+          created > 0
+            ? `Created ${created} folder${created === 1 ? "" : "s"} under ${result.basePath}`
+            : `All folders verified under ${result.basePath}`,
+      });
+    } catch (error) {
+      toast.error("Could not configure storage location", {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const pickFolder = async () => {
+    const selected = await open({ directory: true, multiple: false, title: "Choose storage location" });
+    if (typeof selected === "string" && selected.length > 0) {
+      await applyBasePath(selected);
+    }
+  };
+
+  return (
+    <section>
+      <SectionHeader
+        title="Storage"
+        description="Everything NexusCraft creates — projects, instances, servers, backups — lives under one workspace folder."
+      />
+
+      <Field
+        label="Workspace folder"
+        hint="Projects, test instances, servers and backups are organized in subfolders here."
+      >
+        <div className="max-w-md space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 flex-1 items-center gap-2 rounded-md border border-input bg-background/60 px-3">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+              <span className="truncate font-mono text-xs">
+                {basePath || suggested || "—"}
+              </span>
+            </div>
+            <Button onClick={() => void pickFolder()} disabled={busy}>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Browse…
+            </Button>
+          </div>
+
+          {!basePath && suggested && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void applyBasePath(suggested)}
+              disabled={busy}
+            >
+              Use default: <span className="font-mono text-xs">{suggested}</span>
+            </Button>
+          )}
+
+          {basePath && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={info ? "success" : "outline"}>
+                {info ? "Folders ready" : "Configured"}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  void openInFileManager(basePath).catch((error) =>
+                    toast.error("Could not open folder", {
+                      description: String(error),
+                    }),
+                  )
+                }
+              >
+                <FolderOpen className="h-4 w-4" />
+                Open in file manager
+              </Button>
+            </div>
+          )}
+        </div>
+      </Field>
+
+      <Field
+        label="Folder layout"
+        hint="Fixed structure — never mix projects, instances or servers manually."
+      >
+        <div className="grid gap-2 sm:grid-cols-2">
+          {STORAGE_SUBDIRS.map((name) => (
+            <div
+              key={name}
+              className="flex items-center justify-between rounded-md border border-border/60 bg-card/40 px-3 py-2"
+            >
+              <span className="font-mono text-xs text-foreground/90">{name}/</span>
+              <span className="text-[11px] text-muted-foreground/70">
+                {name === "projects" && "Mod & content projects"}
+                {name === "instances" && "Isolated Minecraft test instances"}
+                {name === "servers" && "Local server installs"}
+                {name === "backups" && "Backup archives & restore points"}
+                {name === "logs" && "Build & server logs"}
+                {name === ".gradle-cache" && "Shared Gradle cache (faster builds)"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Field>
+    </section>
+  );
+}

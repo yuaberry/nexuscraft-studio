@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+src-tauri/target/
+
+# Logs
+*.log
+
+# Editor & OS cruft
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local env — NEVER commit secrets
+.env
+.env.*
+!.env.example
+
+# Tauri generated (committed icons are the source of truth)
+src-tauri/gen/
