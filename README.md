@@ -72,6 +72,19 @@ scripts/              # Geração de ícones
 docs/                 # Arquitetura
 ```
 
+## Ambiente & Cloud opcional
+
+O app é **local-first**: funciona 100% offline. Uma camada cloud **opcional** (Supabase) está preparada para o futuro (sync de projetos, marketplace, colaboração — Fase 7+):
+
+```bash
+cp .env.example .env   # edite e preencha os valores localmente
+```
+
+- `.env` é **gitignored** — secrets nunca vão para o repo.
+- Keys de IA vão no app: **Settings → AI** (guardadas no OS keyring) — não no `.env`.
+- `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` alimentam a camada cloud quando ela for ativada (`src/services/cloud/cloudConfig.ts`).
+- `SUPABASE_SERVICE_ROLE_KEY` nunca vai para o frontend (sem prefixo `VITE_`).
+
 ## Arquitetura
 
 Leia [`docs/architecture.md`](docs/architecture.md) — decisões AD-1..AD-11, camadas de segurança e plano de fases.
