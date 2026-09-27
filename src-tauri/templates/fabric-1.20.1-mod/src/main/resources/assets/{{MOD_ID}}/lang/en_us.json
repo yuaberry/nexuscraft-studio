@@ -1,0 +1,4 @@
+{
+  "itemgroup.{{MOD_ID}}.example": "{{MOD_NAME}}",
+  "item.{{MOD_ID}}.example_item": "Example Item"
+}

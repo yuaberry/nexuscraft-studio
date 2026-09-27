@@ -40,6 +40,17 @@ pub fn run() {
             commands::secrets::secrets_delete,
             commands::secrets::secrets_clear_all,
             commands::secrets::secrets_backend_info,
+            commands::projects::create_project,
+            commands::fs::list_project_files,
+            commands::fs::read_project_file,
+            commands::fs::write_project_file,
+            commands::fs::create_project_directory,
+            commands::fs::delete_project_entry,
+            commands::fs::rename_project_entry,
+            commands::git::project_create_snapshot,
+            commands::git::project_list_snapshots,
+            commands::git::project_snapshot_restore,
+            commands::git::project_git_status,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

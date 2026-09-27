@@ -1,3 +1,8 @@
 pub mod environment;
+pub mod fs;
+pub mod git;
+pub mod projects;
 pub mod secrets;
 pub mod storage;
+pub mod templates;
+pub mod templates_embed;
