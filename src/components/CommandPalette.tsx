@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { useUiStore } from "@/stores/uiStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useProjectsStore } from "@/stores/projectsStore";
 import { secretsGet, AI_API_KEY_ID } from "@/services/secrets/secretsService";
 import { openInFileManager } from "@/services/storage/storageService";
 import { testAiConnection } from "@/services/ai/connectionService";
@@ -53,6 +54,8 @@ export function CommandPalette() {
   const setOpen = useUiStore((s) => s.setPaletteOpen);
   const setAboutOpen = useUiStore((s) => s.setAboutOpen);
   const settings = useSettingsStore((s) => s.settings);
+  const projects = useProjectsStore((s) => s.projects);
+  const setCreateWizardOpen = useUiStore((s) => s.setCreateWizardOpen);
 
   const go = (to: string) => {
     setOpen(false);
@@ -111,6 +114,27 @@ export function CommandPalette() {
             <CommandInput placeholder="Type a command or search…" />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
+
+              <CommandGroup heading="Projects">
+                <PaletteItem
+                  icon={Boxes}
+                  label="Create new project"
+                  onSelect={() => {
+                    setOpen(false);
+                    setCreateWizardOpen(true);
+                  }}
+                />
+                {projects.slice(0, 6).map((project) => (
+                  <PaletteItem
+                    key={project.id}
+                    icon={Boxes}
+                    label={`Open: ${project.name}`}
+                    onSelect={() => go(`/projects/${project.id}`)}
+                  />
+                ))}
+              </CommandGroup>
+
+              <CommandSeparator />
 
               <CommandGroup heading="Navigate">
                 {NAV_TARGETS.filter((t) => t.group === "Navigate").map((target) => (

@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { useUiStore } from "@/stores/uiStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useProjectsStore } from "@/stores/projectsStore";
 import { Badge } from "@/components/ui/badge";
 import { getProviderMeta } from "@/services/ai/providers";
 import { secretsHas, AI_API_KEY_ID } from "@/services/secrets/secretsService";
 
 const ROUTE_LABELS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /^\/$/, label: "Home" },
+  { pattern: /^\/projects\/[^/]+/, label: "Workspace / Project" },
   { pattern: /^\/projects/, label: "Workspace / Projects" },
   { pattern: /^\/ai-creator/, label: "Workspace / AI Creator" },
   { pattern: /^\/servers/, label: "Workspace / Servers" },
@@ -56,11 +58,17 @@ export function Topbar() {
     };
   }, [aiSettings.provider, needsKey, pathname]);
 
+  const activeProject = pathname.startsWith("/projects/")
+    ? useProjectsStore.getState().projects.find((p) => pathname.includes(p.id))
+    : undefined;
+
   return (
     <header className="glass flex h-12 shrink-0 items-center justify-between border-b border-border/70 px-4">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <span className="font-medium text-foreground/90">
-          {currentBreadcrumb(pathname)}
+          {activeProject
+            ? `Workspace / Projects / ${activeProject.name}`
+            : currentBreadcrumb(pathname)}
         </span>
       </div>
 

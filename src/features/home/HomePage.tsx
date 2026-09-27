@@ -17,7 +17,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NexusMark } from "@/components/brand/NexusLogo";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useProjectsStore } from "@/stores/projectsStore";
+import { useUiStore } from "@/stores/uiStore";
 import { detectEnvironment } from "@/services/environment/environmentService";
+import { Clock } from "lucide-react";
+import { formatRelativeTime } from "@/lib/utils";
+import type { ProjectRecord } from "@/types";
 import { secretsHas, AI_API_KEY_ID } from "@/services/secrets/secretsService";
 import { getProviderMeta } from "@/services/ai/providers";
 import { openInFileManager } from "@/services/storage/storageService";
@@ -32,6 +37,14 @@ export function HomePage() {
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [env, setEnv] = useState<EnvironmentInfo | null>(null);
   const [envLoading, setEnvLoading] = useState(true);
+  const setWizardOpen = useUiStore((s) => s.setCreateWizardOpen);
+  const projects = useProjectsStore((s) => s.projects);
+  const projectsLoaded = useProjectsStore((s) => s.loaded);
+  const hydrateProjects = useProjectsStore((s) => s.hydrate);
+
+  useEffect(() => {
+    if (!projectsLoaded) void hydrateProjects();
+  }, [projectsLoaded, hydrateProjects]);
 
   const provider = getProviderMeta(ai.provider);
   const aiReady =
@@ -116,12 +129,14 @@ export function HomePage() {
             <SetupCard
               step={3}
               title="Create your first project"
-              done={false}
-              doneLabel=""
-              pendingLabel="The project wizard arrives in Phase 1"
-              actionLabel="Coming in Phase 1"
-              onAction={() => navigate("/projects")}
-              disabled
+              done={projects.length > 0}
+              doneLabel={projects.length === 1 ? "1 project created" : `${projects.length} projects created`}
+              pendingLabel="A compilable Fabric 1.20.1 workspace, ready to extend"
+              actionLabel={projects.length > 0 ? "View projects" : "Create project"}
+              onAction={() => {
+                if (projects.length > 0) navigate("/projects");
+                else setWizardOpen(true);
+              }}
             />
           </div>
         </section>
@@ -134,21 +149,39 @@ export function HomePage() {
                 <Coffee className="h-4 w-4 text-primary" />
                 Continue creating
               </CardTitle>
-              <Badge variant="outline">Phase 1</Badge>
+              {projects.length > 0 && (
+                <button
+                  className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => navigate("/projects")}
+                >
+                  View all →
+                </button>
+              )}
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border/80 px-6 py-10 text-center">
-                <div className="rounded-xl bg-secondary/60 p-3">
-                  <Terminal className="h-6 w-6 text-muted-foreground/70" />
+              {projects.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border/80 px-6 py-10 text-center">
+                  <div className="rounded-xl bg-secondary/60 p-3">
+                    <Terminal className="h-6 w-6 text-muted-foreground/70" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground/90">
+                    No projects yet
+                  </p>
+                  <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
+                    Create a Fabric 1.20.1 mod workspace — compilable from the
+                    first minute, versioned by git snapshots.
+                  </p>
+                  <Button variant="gradient" size="sm" onClick={() => setWizardOpen(true)}>
+                    Create project
+                  </Button>
                 </div>
-                <p className="text-sm font-medium text-foreground/90">
-                  No projects yet
-                </p>
-                <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">
-                  Your projects will appear here as cards — with Minecraft version,
-                  loader, type and build status — ready to resume with one click.
-                </p>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  {projects.slice(0, 4).map((project) => (
+                    <ProjectRow key={project.id} project={project} onOpen={() => navigate(`/projects/${project.id}`)} />
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -207,6 +240,32 @@ export function HomePage() {
         )}
       </div>
     </div>
+  );
+}
+
+function ProjectRow({ project, onOpen }: { project: ProjectRecord; onOpen: () => void }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="group flex w-full items-center gap-3 rounded-lg border border-border/60 bg-card/40 px-4 py-3 text-left transition-colors hover:border-primary/40"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold">{project.name}</p>
+        <div className="mt-1 flex items-center gap-1.5">
+          <Badge variant="default">{project.loader}</Badge>
+          <Badge variant="secondary">MC {project.minecraft_version}</Badge>
+        </div>
+      </div>
+      <div className="flex shrink-0 flex-col items-end">
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          {formatRelativeTime(project.updated_at)}
+        </span>
+        <span className="mt-1 text-[10px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+          Open →
+        </span>
+      </div>
+    </button>
   );
 }
 

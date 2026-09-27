@@ -3,6 +3,7 @@ import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { CommandPalette } from "@/components/CommandPalette";
 import { AboutDialog } from "@/components/AboutDialog";
+import { CreateProjectWizard } from "@/features/projects/CreateProjectWizard";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 export function AppLayout() {
@@ -23,6 +24,7 @@ export function AppLayout() {
       </div>
       <CommandPalette />
       <AboutDialog />
+      <CreateProjectWizard />
     </div>
   );
 }

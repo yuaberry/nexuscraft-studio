@@ -13,7 +13,7 @@ O que está por vir aparece como roadmap honesto.
 
 ---
 
-## Status atual — Fase 0 (concluída)
+## Status atual — Fases 0 e 1 (concluídas)
 
 | Sistema | Estado |
 |---|---|
@@ -25,17 +25,30 @@ O que está por vir aparece como roadmap honesto.
 | Command Palette (Ctrl+K) com navegação e ações reais | ✅ |
 | Detecção de ambiente (Java, Git) ao vivo | ✅ |
 | Workspace de armazenamento configurável (`~/NexusCraft`) | ✅ |
-| Ícones multiplataforma gerados (Linux/Windows/macOS) | ✅ |
+| **Fase 1:** Wizard de criação de projeto (Fabric 1.20.1 compilável) | ✅ |
+| **Fase 1:** Template engine embutido no binário (tokens, testes 5/5) | ✅ |
+| **Fase 1:** Project explorer + Monaco Editor (tabs, Ctrl+S, tema nexus-dark) | ✅ |
+| **Fase 1:** Git snapshots — criar, listar, restaurar (histórico preservado) | ✅ |
+| **Fase 1:** FS sandbox com path guard (`..`, symlinks e escapes recusados) | ✅ |
 
 ## Roadmap
 
-- **Fase 1** — Projects: wizard de criação, explorer, Monaco editor, snapshots git
 - **Fase 2** — AI Creator: chat com streaming, `project-spec.json`, Reference Board
 - **Fase 3** — Nexus Agent: tools com sandbox Rust, allowlist, auditoria
 - **Fase 4** — Build System: Gradle, Error Center, Auto-Fix
 - **Fase 5** — Instâncias isoladas + Launcher (Run Minecraft com o mod)
 - **Fase 6** — Server Studio: criar/gerir servidores locais, console, backups
 - **Fase 7** — GitHub + projeto exemplo "Dark Kingdom" ponta a ponta
+
+## Criando o primeiro projeto
+
+1. **Settings → Storage** — escolha a pasta do workspace (padrão `~/NexusCraft`)
+2. **Projects → Create project** (ou Ctrl+K → "Create new project")
+3. Digite um nome (ex.: *Dark Kingdom*) → Create
+4. O workspace abre com explorer, editor Monaco e painel de snapshots
+5. Edite, salve (Ctrl+S), crie snapshots antes de mudanças grandes
+
+O projeto gerado é um mod Fabric 1.20.1 completo — `./gradlew build` compila (a integração de build chega na Fase 4).
 
 ## Requisitos
 

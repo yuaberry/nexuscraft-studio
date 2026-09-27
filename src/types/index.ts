@@ -43,6 +43,59 @@ export interface AppSettings {
   storage: StorageSettings;
 }
 
+export type ProjectType = "mod";
+export type ProjectLoader = "fabric" | "forge" | "neoforge";
+
+export interface ProjectRecord {
+  id: string;
+  name: string;
+  slug: string;
+  type: ProjectType;
+  minecraft_version: string;
+  loader: ProjectLoader;
+  description: string | null;
+  license: string;
+  path: string;
+  repository_url: string | null;
+  status: string;
+  last_build_status: string | null;
+  last_build_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateProjectRequest {
+  storageBase: string;
+  slug: string;
+  name: string;
+  template: string;
+  modId: string;
+  modIdClass: string;
+  package: string;
+  description: string;
+  license: string;
+  author: string;
+}
+
+export interface CreateProjectResult {
+  project_path: string;
+  files_created: number;
+}
+
+export interface ProjectFileEntry {
+  path: string;
+  is_dir: boolean;
+  size_bytes: number;
+}
+
+export interface SnapshotEntry {
+  sha: string;
+  short_sha: string;
+  label: string;
+  reason: string;
+  date: string;
+}
+
 export interface EnvironmentInfo {
   os: string;
   arch: string;

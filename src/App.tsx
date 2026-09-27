@@ -4,7 +4,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useProjectsStore } from "@/stores/projectsStore";
 import { HomePage } from "@/features/home/HomePage";
+import { ProjectsPage } from "@/features/projects/ProjectsPage";
+import { ProjectWorkspacePage } from "@/features/projects/workspace/ProjectWorkspacePage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { RoadmapPage } from "@/features/roadmap/RoadmapPage";
 
@@ -14,9 +17,12 @@ export default function App() {
   const accent = useSettingsStore((s) => s.settings.appearance.accent);
   const reduceMotion = useSettingsStore((s) => s.settings.appearance.reduceMotion);
 
+  const hydrateProjects = useProjectsStore((s) => s.hydrate);
+
   useEffect(() => {
     void hydrate();
-  }, [hydrate]);
+    void hydrateProjects();
+  }, [hydrate, hydrateProjects]);
 
   useEffect(() => {
     document.documentElement.dataset.accent = accent;
@@ -30,35 +36,8 @@ export default function App() {
           <Routes>
             <Route element={<AppLayout />}>
               <Route index element={<HomePage />} />
-              <Route
-                path="projects"
-                element={
-                  <RoadmapPage
-                    phase="Fase 1"
-                    title="Projects"
-                    subtitle="Project wizard, explorer and Monaco editor"
-                    description="Create real Minecraft projects — mods, datapacks, resource packs and servers — through a guided wizard. Each project becomes a fully versioned workspace with an embedded code editor."
-                    items={[
-                      {
-                        title: "Create wizard",
-                        body: "Mods, Content and Server categories with version/loader selection.",
-                      },
-                      {
-                        title: "Project explorer",
-                        body: "File tree, breadcrumbs and tabs over a real project on disk.",
-                      },
-                      {
-                        title: "Monaco editor",
-                        body: "The same editor that powers VS Code, embedded natively.",
-                      },
-                      {
-                        title: "Snapshots",
-                        body: "Automatic git snapshots before every AI-generated change.",
-                      },
-                    ]}
-                  />
-                }
-              />
+              <Route path="projects" element={<ProjectsPage />} />
+              <Route path="projects/:projectId" element={<ProjectWorkspacePage />} />
               <Route
                 path="ai-creator"
                 element={
