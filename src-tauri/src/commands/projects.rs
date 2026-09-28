@@ -20,6 +20,15 @@ pub struct CreateProjectPayload {
     pub description: String,
     pub license: String,
     pub author: String,
+    // Version Adapter Layer — resolved from the auto-updating catalog
+    pub minecraft_version: String,
+    pub java_release: u32,
+    pub yarn_mappings: String,
+    pub loader_version: String,
+    pub loader_min: String,
+    pub fabric_api_version: String,
+    pub mc_depends: String,
+    pub mappings_line: String,
 }
 
 #[derive(Serialize)]
@@ -71,6 +80,13 @@ pub fn create_project(payload: CreateProjectPayload) -> Result<CreateProjectResu
     if !payload.mod_id.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_') {
         return Err("Invalid mod id: lowercase letters, digits and underscores only".to_string());
     }
+    if payload.minecraft_version.trim().is_empty() {
+        return Err("Minecraft version is required".to_string());
+    }
+    let valid_java = [8u32, 17, 21];
+    if !valid_java.contains(&payload.java_release) {
+        return Err(format!("Unsupported Java release: {}", payload.java_release));
+    }
 
     // Resolve and lock the workspace root
     let base = PathBuf::from(&payload.storage_base)
@@ -113,6 +129,19 @@ pub fn create_project(payload: CreateProjectPayload) -> Result<CreateProjectResu
         },
         license: payload.license,
         year,
+        mc_version: payload.minecraft_version.trim().to_string(),
+        java_release: payload.java_release,
+        java_enum: match payload.java_release {
+            8 => "1_8".to_string(),
+            other => other.to_string(),
+        },
+        java_min: format!(">={}", payload.java_release),
+        yarn_mappings: payload.yarn_mappings.trim().to_string(),
+        loader_version: payload.loader_version.trim().to_string(),
+        loader_min: payload.loader_min.trim().to_string(),
+        fabric_api_version: payload.fabric_api_version.trim().to_string(),
+        mc_depends: payload.mc_depends.trim().to_string(),
+        mappings_line: payload.mappings_line.trim().to_string(),
     };
 
     let files = templates::write_template(&payload.template, &tokens, &project_dir)?;
@@ -153,6 +182,14 @@ mod tests {
             description: "A dark medieval RPG mod".to_string(),
             license: "MIT".to_string(),
             author: "Test Author".to_string(),
+            minecraft_version: "1.20.1".to_string(),
+            java_release: 17,
+            yarn_mappings: "1.20.1+build.10".to_string(),
+            loader_version: "0.16.9".to_string(),
+            loader_min: ">=0.16.0".to_string(),
+            fabric_api_version: "0.92.2+1.20.1".to_string(),
+            mc_depends: "~1.20.1".to_string(),
+            mappings_line: "mappings \"net.fabricmc:yarn:1.20.1+build.10:v2\"".to_string(),
         }
     }
 

@@ -17,6 +17,18 @@ pub const FABRIC_1201_TEMPLATE: &[EmbeddedFile] = &[
         bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.gitignore"),
     },
     EmbeddedFile {
+        path: ".nexus/ai-memory.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.nexus/ai-memory.md"),
+    },
+    EmbeddedFile {
+        path: ".nexus/project-spec.json",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.nexus/project-spec.json"),
+    },
+    EmbeddedFile {
+        path: ".nexus/style-bible.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.nexus/style-bible.md"),
+    },
+    EmbeddedFile {
         path: "build.gradle",
         bytes: include_bytes!("../../templates/fabric-1.20.1-mod/build.gradle"),
     },

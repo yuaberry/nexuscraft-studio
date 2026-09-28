@@ -1,7 +1,9 @@
 {
   "identifier": "default",
-  "description": "NexusCraft Studio default capabilities — least privilege set for Phase 0",
-  "windows": ["main"],
+  "description": "NexusCraft Studio default capabilities \u2014 least privilege set for Phase 0",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-close",
@@ -14,11 +16,45 @@
     {
       "identifier": "http:default",
       "allow": [
-        { "url": "https://openrouter.ai/*" },
-        { "url": "https://api.openai.com/*" },
-        { "url": "https://api.anthropic.com/*" },
-        { "url": "http://localhost:*" },
-        { "url": "http://127.0.0.1:*" }
+        {
+          "url": "https://openrouter.ai/*"
+        },
+        {
+          "url": "https://api.openai.com/*"
+        },
+        {
+          "url": "https://api.anthropic.com/*"
+        },
+        {
+          "url": "http://localhost:*"
+        },
+        {
+          "url": "http://127.0.0.1:*"
+        },
+        {
+          "url": "https://launchermeta.mojang.com/*"
+        },
+        {
+          "url": "https://piston-meta.mojang.com/*"
+        },
+        {
+          "url": "https://meta.fabricmc.net/*"
+        },
+        {
+          "url": "https://maven.fabricmc.net/*"
+        },
+        {
+          "url": "https://maven.neoforged.net/*"
+        },
+        {
+          "url": "https://files.minecraftforge.net/*"
+        },
+        {
+          "url": "https://maven.minecraftforge.net/*"
+        },
+        {
+          "url": "https://api.papermc.io/*"
+        }
       ]
     }
   ]

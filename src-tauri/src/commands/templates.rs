@@ -21,6 +21,17 @@ pub struct TemplateTokens {
     pub description: String,
     pub license: String,
     pub year: String,
+    // Version Adapter Layer (resolved by the version catalog)
+    pub mc_version: String,
+    pub java_release: u32,
+    pub java_enum: String,
+    pub java_min: String,
+    pub yarn_mappings: String,
+    pub loader_version: String,
+    pub loader_min: String,
+    pub fabric_api_version: String,
+    pub mc_depends: String,
+    pub mappings_line: String,
 }
 
 impl TemplateTokens {
@@ -38,6 +49,16 @@ impl TemplateTokens {
             ("{{LICENSE}}".to_string(), self.license.clone()),
             ("{{SLUG}}".to_string(), self.slug.clone()),
             ("{{YEAR}}".to_string(), self.year.clone()),
+            ("{{YARN_MAPPINGS}}".to_string(), self.yarn_mappings.clone()),
+            ("{{MAPPINGS_LINE}}".to_string(), self.mappings_line.clone()),
+            ("{{LOADER_VERSION}}".to_string(), self.loader_version.clone()),
+            ("{{LOADER_MIN}}".to_string(), self.loader_min.clone()),
+            ("{{FABRIC_API_VERSION}}".to_string(), self.fabric_api_version.clone()),
+            ("{{MC_DEPENDS}}".to_string(), self.mc_depends.clone()),
+            ("{{MC_VERSION}}".to_string(), self.mc_version.clone()),
+            ("{{JAVA_RELEASE}}".to_string(), self.java_release.to_string()),
+            ("{{JAVA_ENUM}}".to_string(), self.java_enum.clone()),
+            ("{{JAVA_MIN}}".to_string(), self.java_min.clone()),
         ]
     }
 }
@@ -127,6 +148,16 @@ mod tests {
             description: "A test mod".to_string(),
             license: "MIT".to_string(),
             year: "2026".to_string(),
+            mc_version: "1.20.1".to_string(),
+            java_release: 17,
+            java_enum: "17".to_string(),
+            java_min: ">=17".to_string(),
+            yarn_mappings: "1.20.1+build.10".to_string(),
+            loader_version: "0.16.9".to_string(),
+            loader_min: ">=0.16.0".to_string(),
+            fabric_api_version: "0.92.2+1.20.1".to_string(),
+            mc_depends: "~1.20.1".to_string(),
+            mappings_line: "mappings \"net.fabricmc:yarn:1.20.1+build.10:v2\"".to_string(),
         }
     }
 
@@ -171,6 +202,22 @@ mod tests {
         let props = fs::read_to_string(dst.join("gradle.properties")).unwrap();
         assert!(props.contains("maven_group=com.nexuscraft.darkkingdom"));
         assert!(props.contains("archives_base_name=dark-kingdom"));
+        assert!(props.contains("minecraft_version=1.20.1"));
+        assert!(props.contains("yarn_mappings=1.20.1+build.10"));
+        assert!(props.contains("loader_version=0.16.9"));
+        assert!(props.contains("fabric_version=0.92.2+1.20.1"));
+
+        // build.gradle targets the right Java release + mappings line
+        let gradle = fs::read_to_string(dst.join("build.gradle")).unwrap();
+        assert!(gradle.contains("it.options.release = 17"));
+        assert!(gradle.contains("JavaVersion.VERSION_17"));
+        assert!(gradle.contains("mappings \"net.fabricmc:yarn:1.20.1+build.10:v2\""));
+
+        // .nexus project spec embedded + valid JSON with numeric java_release
+        let spec_raw = fs::read_to_string(dst.join(".nexus/project-spec.json")).unwrap();
+        let spec: serde_json::Value = serde_json::from_str(&spec_raw).unwrap();
+        assert_eq!(spec["minecraft_version"], "1.20.1");
+        assert_eq!(spec["build_configuration"]["java_release"], 17);
 
         // fabric.mod.json is valid JSON with rendered id
         let mod_json = fs::read_to_string(dst.join("src/main/resources/fabric.mod.json")).unwrap();
@@ -184,6 +231,37 @@ mod tests {
         // No token leftovers anywhere in the tree
         assert_no_tokens(&dst);
 
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn renders_modern_mc_version_1_21() {
+        let mut tokens = sample_tokens();
+        tokens.mc_version = "1.21.1".to_string();
+        tokens.java_release = 21;
+        tokens.java_enum = "21".to_string();
+        tokens.java_min = ">=21".to_string();
+        tokens.yarn_mappings = "1.21.1+build.3".to_string();
+        tokens.loader_version = "0.19.5".to_string();
+        tokens.fabric_api_version = "0.116.17+1.21.1".to_string();
+        tokens.mc_depends = "~1.21.1".to_string();
+        tokens.mappings_line = "mappings loom.officialMojangMappings()".to_string();
+
+        let base = std::env::temp_dir().join(format!("nexuscraft-121-{}", std::process::id()));
+        let dst = base.join("modern-mod");
+        write_template("fabric-1.20.1-mod", &tokens, &dst).unwrap();
+
+        let gradle = fs::read_to_string(dst.join("build.gradle")).unwrap();
+        assert!(gradle.contains("it.options.release = 21"));
+        assert!(gradle.contains("JavaVersion.VERSION_21"));
+        assert!(gradle.contains("mappings loom.officialMojangMappings()"));
+
+        let mod_json = fs::read_to_string(dst.join("src/main/resources/fabric.mod.json")).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&mod_json).unwrap();
+        assert_eq!(parsed["depends"]["minecraft"], "~1.21.1");
+        assert_eq!(parsed["depends"]["java"], ">=21");
+
+        assert_no_tokens(&dst);
         let _ = fs::remove_dir_all(&base);
     }
 

@@ -18,6 +18,13 @@ pub fn run() {
             sql: include_str!("migrations/001_init.sql"),
             kind: MigrationKind::Up,
         },
+        // v2 — Minecraft Version Catalog cache (auto-updating)
+        Migration {
+            version: 2,
+            description: "version_catalog_columns",
+            sql: include_str!("migrations/002_version_catalog.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()
@@ -47,6 +54,8 @@ pub fn run() {
             commands::fs::create_project_directory,
             commands::fs::delete_project_entry,
             commands::fs::rename_project_entry,
+            commands::fs::read_project_file_base64,
+            commands::fs::import_project_file,
             commands::git::project_create_snapshot,
             commands::git::project_list_snapshots,
             commands::git::project_snapshot_restore,
