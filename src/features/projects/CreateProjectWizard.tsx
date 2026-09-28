@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +17,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -32,6 +34,13 @@ import {
   toModId,
   toPascalCase,
 } from "@/services/projects/projectsService";
+import {
+  ensureCatalog,
+  getVersions,
+  resolveTemplateParams,
+  templateParamsToPayload,
+} from "@/services/minecraft/versionCatalog";
+import type { MinecraftVersionInfo } from "@/types/catalog";
 import type { ProjectRecord } from "@/types";
 
 const LICENSES = ["MIT", "Apache-2.0", "GPL-3.0", "LGPL-3.0", "Custom", "Proprietary"];
@@ -43,14 +52,80 @@ export function CreateProjectWizard() {
   const open = useUiStore((s) => s.createWizardOpen);
   const setOpen = useUiStore((s) => s.setCreateWizardOpen);
 
-  const onOpenChange = (next: boolean) => setOpen(next);
-
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [license, setLicense] = useState(settings.general.defaultLicense);
   const [author, setAuthor] = useState(settings.general.authorName);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // ---- Version catalog (auto-updating) ----
+  const [versions, setVersions] = useState<MinecraftVersionInfo[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [mcVersion, setMcVersion] = useState<string>(settings.minecraft.defaultVersion);
+  const [resolved, setResolved] = useState<Awaited<ReturnType<typeof resolveTemplateParams>> | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setCatalogLoading(true);
+    (async () => {
+      try {
+        await ensureCatalog(); // refreshes automatically when stale (12h TTL)
+        const list = await getVersions();
+        if (cancelled) return;
+        setVersions(list);
+        // keep configured default if the catalog has it; else pick the newest release
+        if (!list.some((v) => v.version === mcVersion && v.kind === "release")) {
+          const newest = list.find((v) => v.kind === "release");
+          if (newest) setMcVersion(newest.version);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          toast.warning("Version catalog unavailable — using embedded fallback", {
+            description: String(error),
+          });
+          const list = await getVersions().catch(() => []);
+          if (!cancelled) setVersions(list);
+        }
+      } finally {
+        if (!cancelled) setCatalogLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    let cancelled = false;
+    resolveTemplateParams(mcVersion)
+      .then((params) => {
+        if (!cancelled) setResolved(params);
+      })
+      .catch(() => {
+        if (!cancelled) setResolved(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mcVersion]);
+
+  const releases = useMemo(
+    () => versions.filter((v) => v.kind === "release").slice(0, 40),
+    [versions],
+  );
+  const snapshots = useMemo(
+    () => versions.filter((v) => v.kind === "snapshot").slice(0, 8),
+    [versions],
+  );
+  const selectedInfo = useMemo(
+    () => versions.find((v) => v.version === mcVersion) ?? null,
+    [versions, mcVersion],
+  );
 
   const slug = useMemo(() => slugify(name), [name]);
   const modId = useMemo(() => toModId(slug), [slug]);
@@ -59,16 +134,16 @@ export function CreateProjectWizard() {
   const [packageOverride, setPackageOverride] = useState("");
 
   const javaPackage = packageOverride.trim() || packageDefault;
-  const isValid = slug.length >= 2 && modId.length >= 2;
+  const isValid = slug.length >= 2 && modId.length >= 2 && resolved !== null;
   const basePath = settings.storage.basePath;
 
   const handleCreate = async () => {
-    if (!isValid) return;
+    if (!isValid || !resolved) return;
     if (!basePath) {
       toast.error("Configure your storage location first", {
         description: "Settings → Storage — choose where projects should live.",
       });
-      onOpenChange(false);
+      setOpen(false);
       navigate("/settings/storage");
       return;
     }
@@ -86,6 +161,7 @@ export function CreateProjectWizard() {
         description: description.trim(),
         license,
         author: author.trim(),
+        ...templateParamsToPayload(resolved),
       });
 
       const now = new Date().toISOString();
@@ -94,7 +170,7 @@ export function CreateProjectWizard() {
         name: name.trim(),
         slug,
         type: "mod",
-        minecraft_version: settings.minecraft.defaultVersion,
+        minecraft_version: resolved.minecraftVersion,
         loader: "fabric",
         description: description.trim() || null,
         license,
@@ -110,9 +186,9 @@ export function CreateProjectWizard() {
       addProject(record);
 
       toast.success(`Project "${name.trim()}" created`, {
-        description: `${result.files_created} files · git repository initialized`,
+        description: `${result.files_created} files · MC ${resolved.minecraftVersion} · Java ${resolved.javaRelease}`,
       });
-      onOpenChange(false);
+      setOpen(false);
       setName("");
       setDescription("");
       setPackageOverride("");
@@ -127,7 +203,7 @@ export function CreateProjectWizard() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -135,8 +211,9 @@ export function CreateProjectWizard() {
             Create project
           </DialogTitle>
           <DialogDescription>
-            A real, compilable Fabric 1.20.1 mod — with gradle wrapper, git and
-            a first item ready to extend with the AI Creator.
+            A real, compilable Fabric mod — version resolved live from the
+            auto-updating catalog (Mojang + Fabric meta), with gradle wrapper,
+            git history and a first item ready to extend.
           </DialogDescription>
         </DialogHeader>
 
@@ -157,8 +234,74 @@ export function CreateProjectWizard() {
             />
             {slug && (
               <p className="text-[11px] text-muted-foreground">
-                <span className="font-mono">{basePath ? `${basePath}/projects/` : ""}{slug}</span>
+                <span className="font-mono">
+                  {basePath ? `${basePath}/projects/` : ""}
+                  {slug}
+                </span>
               </p>
+            )}
+          </div>
+
+          {/* Minecraft version — live catalog */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label>Minecraft version</Label>
+              {catalogLoading ? (
+                <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" /> syncing catalog…
+                </span>
+              ) : (
+                <span className="text-[10px] text-muted-foreground">
+                  auto-updated from Mojang + Fabric meta
+                </span>
+              )}
+            </div>
+            <Select value={mcVersion} onValueChange={setMcVersion}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose version…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Releases</SelectLabel>
+                  {releases.map((v) => (
+                    <SelectItem key={v.version} value={v.version}>
+                      {v.version}
+                      {v.experimental ? "  ⚠︎" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+                {snapshots.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Snapshots (experimental)</SelectLabel>
+                    {snapshots.map((v) => (
+                      <SelectItem key={v.version} value={v.version}>
+                        {v.version}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+              </SelectContent>
+            </Select>
+            {resolved && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <Badge variant="secondary">Java {resolved.javaRelease}</Badge>
+                {selectedInfo?.fabric && (
+                  <>
+                    <Badge variant="outline">loader {resolved.loaderVersion}</Badge>
+                    <Badge variant="outline">
+                      {resolved.yarnMappings
+                        ? `yarn ${resolved.yarnMappings}`
+                        : "official Mojang mappings"}
+                    </Badge>
+                    <Badge variant="outline">fabric-api {resolved.fabricApiVersion}</Badge>
+                  </>
+                )}
+                {resolved.experimental && (
+                  <Badge variant="warning">
+                    experimental — template targets ≤ 1.21.1; newer APIs may need agent fixes (Phase 4)
+                  </Badge>
+                )}
+              </div>
             )}
           </div>
 
@@ -238,13 +381,14 @@ export function CreateProjectWizard() {
           <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
             <Badge variant="default">Fabric</Badge>
             <span className="text-xs text-muted-foreground">
-              Minecraft {settings.minecraft.defaultVersion} · template validated by tests
+              Forge/NeoForge catalog data is already tracked — templates arrive in
+              Phase 3.
             </span>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
+          <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>
             Cancel
           </Button>
           <Button

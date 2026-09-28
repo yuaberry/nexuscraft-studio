@@ -8,6 +8,7 @@ import { useProjectsStore } from "@/stores/projectsStore";
 import { HomePage } from "@/features/home/HomePage";
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
 import { ProjectWorkspacePage } from "@/features/projects/workspace/ProjectWorkspacePage";
+import { AiCreatorPage } from "@/features/ai-creator/AiCreatorPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { RoadmapPage } from "@/features/roadmap/RoadmapPage";
 
@@ -22,6 +23,10 @@ export default function App() {
   useEffect(() => {
     void hydrate();
     void hydrateProjects();
+    // Version catalog auto-refresh on boot (12h TTL — no-op when fresh)
+    import("@/services/minecraft/versionCatalog")
+      .then((m) => m.ensureCatalog().catch(() => {}))
+      .catch(() => {});
   }, [hydrate, hydrateProjects]);
 
   useEffect(() => {
@@ -38,35 +43,7 @@ export default function App() {
               <Route index element={<HomePage />} />
               <Route path="projects" element={<ProjectsPage />} />
               <Route path="projects/:projectId" element={<ProjectWorkspacePage />} />
-              <Route
-                path="ai-creator"
-                element={
-                  <RoadmapPage
-                    phase="Fases 2–4"
-                    title="AI Creator"
-                    subtitle="Chat, Nexus Agent and the Consistency Engine"
-                    description="Describe what you want in natural language — the Nexus Agent plans a specification, writes files, configures dependencies, builds and self-corrects errors, all inside a sandboxed tool environment."
-                    items={[
-                      {
-                        title: "AI Provider Layer",
-                        body: "OpenRouter, OpenAI-compatible, Anthropic and local Ollama models.",
-                      },
-                      {
-                        title: "Nexus Agent",
-                        body: "Tool-calling agent with read/write/build tools, allowlists and audit logs.",
-                      },
-                      {
-                        title: "Project Spec",
-                        body: "Every project keeps a project-spec.json as the single source of truth.",
-                      },
-                      {
-                        title: "Auto-Fix builds",
-                        body: "Build errors are parsed and repaired by the agent automatically.",
-                      },
-                    ]}
-                  />
-                }
-              />
+              <Route path="ai-creator" element={<AiCreatorPage />} />
               <Route
                 path="servers"
                 element={

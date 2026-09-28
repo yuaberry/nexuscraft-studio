@@ -1,13 +1,20 @@
 /**
  * Monaco Editor — local, offline-first setup.
  *
- * Monaco is bundled with the app (no CDN), workers are served as web workers
- * from the same origin, and the color scheme matches the NexusCraft design
- * tokens so the editor feels native to the shell.
+ * We compose Monaco from the core API + editor features + only the
+ * languages relevant to Minecraft development instead of the kitchen-sink
+ * package. This keeps the bundle lean and the build memory footprint low.
+ *
+ * Workers are served as web workers from the same origin (no CDN).
  */
 
 import { loader } from "@monaco-editor/react";
+// Full monaco entry (editor + all languages). Monaco 0.57 reorganized its
+// ESM layout — composing individual contributions is version-fragile, so we
+// use the stable root entry and compensate with a larger build heap.
 import * as monaco from "monaco-editor";
+
+// Workers
 import editorWorker from "monaco-editor/editor/editor.worker.js?worker";
 import jsonWorker from "monaco-editor/language/json/json.worker.js?worker";
 import cssWorker from "monaco-editor/language/css/css.worker.js?worker";

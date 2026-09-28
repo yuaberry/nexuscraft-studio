@@ -75,6 +75,15 @@ export interface CreateProjectRequest {
   description: string;
   license: string;
   author: string;
+  // Version Adapter Layer (auto-updating catalog)
+  minecraftVersion: string;
+  javaRelease: number;
+  yarnMappings: string;
+  mappingsLine: string;
+  loaderVersion: string;
+  loaderMin: string;
+  fabricApiVersion: string;
+  mcDepends: string;
 }
 
 export interface CreateProjectResult {

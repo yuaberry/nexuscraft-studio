@@ -13,7 +13,7 @@ O que está por vir aparece como roadmap honesto.
 
 ---
 
-## Status atual — Fases 0 e 1 (concluídas)
+## Status atual — Fases 0, 1 e 2 (concluídas)
 
 | Sistema | Estado |
 |---|---|
@@ -30,10 +30,14 @@ O que está por vir aparece como roadmap honesto.
 | **Fase 1:** Project explorer + Monaco Editor (tabs, Ctrl+S, tema nexus-dark) | ✅ |
 | **Fase 1:** Git snapshots — criar, listar, restaurar (histórico preservado) | ✅ |
 | **Fase 1:** FS sandbox com path guard (`..`, symlinks e escapes recusados) | ✅ |
+| **Fase 2:** AI Creator — chat streaming (OpenRouter/OpenAI/Anthropic/Ollama), sessões persistidas no SQLite | ✅ |
+| **Fase 2:** project-spec.json — proposta pela IA, preview central, save com snapshot automático | ✅ |
+| **Fase 2:** Reference Board — imagens no projeto (`.nexus/references/`), anexadas como vision | ✅ |
+| **Fase 2:** Version Catalog auto-atualizável — Mojang + Fabric + Forge + NeoForge + Paper (TTL 12h) | ✅ |
+| **Fase 2:** Wizard com versão selecionável — novo esquema 26.x e legado 1.21.x/1.20.x | ✅ |
 
 ## Roadmap
 
-- **Fase 2** — AI Creator: chat com streaming, `project-spec.json`, Reference Board
 - **Fase 3** — Nexus Agent: tools com sandbox Rust, allowlist, auditoria
 - **Fase 4** — Build System: Gradle, Error Center, Auto-Fix
 - **Fase 5** — Instâncias isoladas + Launcher (Run Minecraft com o mod)
@@ -44,11 +48,14 @@ O que está por vir aparece como roadmap honesto.
 
 1. **Settings → Storage** — escolha a pasta do workspace (padrão `~/NexusCraft`)
 2. **Projects → Create project** (ou Ctrl+K → "Create new project")
-3. Digite um nome (ex.: *Dark Kingdom*) → Create
+3. Escolha a **versão do Minecraft** no catálogo ao vivo (sync automático: Mojang oficial + Fabric/Forge/NeoForge/Paper) e digite um nome → Create
 4. O workspace abre com explorer, editor Monaco e painel de snapshots
-5. Edite, salve (Ctrl+S), crie snapshots antes de mudanças grandes
+5. **AI Creator** — descreva o design; a IA propõe o `project-spec.json` com o projeto como contexto
 
-O projeto gerado é um mod Fabric 1.20.1 completo — `./gradlew build` compila (a integração de build chega na Fase 4).
+O template é parametrizado por versão: yarn mappings (legado 1.x) ou official
+Mojang mappings (novo esquema 26.x), Java release correto e Fabric API
+resolvida por versão. Versões acima de 1.21.1 são marcadas experimentais —
+o agente corrigirá APIs novas no build (Fase 4).
 
 ## Requisitos
 
