@@ -13,13 +13,15 @@ import {
   deleteProjectEntry,
   renameProjectEntry,
 } from "@/services/projects/projectsService";
-import { getProject, touchProject } from "@/services/db/repositories/projectsRepository";
+import { touchProject } from "@/services/db/repositories/projectsRepository";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useProjectsStore } from "@/stores/projectsStore";
 import { setupMonacoTheme, languageFromPath, registerSaveShortcut } from "@/lib/monaco";
 import { cn } from "@/lib/utils";
 import { FileTree } from "./FileTree";
 import { SnapshotPanel } from "./SnapshotPanel";
-import type { ProjectFileEntry, ProjectRecord } from "@/types";
+import { BuildDrawer } from "./BuildDrawer";
+import type { ProjectFileEntry } from "@/types";
 
 interface OpenTab {
   path: string;
@@ -32,7 +34,14 @@ export function ProjectWorkspacePage() {
   const navigate = useNavigate();
   const basePath = useSettingsStore((s) => s.settings.storage.basePath);
 
-  const [project, setProject] = useState<ProjectRecord | null>(null);
+  const projects = useProjectsStore((s) => s.projects);
+  const projectsLoaded = useProjectsStore((s) => s.loaded);
+  const hydrateProjects = useProjectsStore((s) => s.hydrate);
+  const project = useMemo(
+    () => projects.find((p) => p.id === projectId) ?? null,
+    [projects, projectId],
+  );
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [files, setFiles] = useState<ProjectFileEntry[]>([]);
   const [filesLoading, setFilesLoading] = useState(true);
   const [tabs, setTabs] = useState<OpenTab[]>([]);
@@ -44,32 +53,17 @@ export function ProjectWorkspacePage() {
   const dirty = activeTab ? activeTab.content !== activeTab.savedContent : false;
   const editorRef = useRef<unknown>(null);
 
-  // ---- load project record ----
+  // ---- load project (store-first; App guarantees hydration) ----
   useEffect(() => {
-    let cancelled = false;
-    if (!projectId) return;
-    getProject(projectId)
-      .then((record) => {
-        if (cancelled) return;
-        if (!record) {
-          toast.error("Project not found");
-          navigate("/projects", { replace: true });
-        } else {
-          setProject(record);
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          toast.error("Could not load project", {
-            description: String(error),
-          });
-          navigate("/projects", { replace: true });
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId, navigate]);
+    if (!projectsLoaded) {
+      void hydrateProjects();
+      return;
+    }
+    if (!project) {
+      toast.error("Project not found");
+      navigate("/projects", { replace: true });
+    }
+  }, [projectsLoaded, project, hydrateProjects, navigate]);
 
   const refreshFiles = useCallback(async () => {
     if (!basePath || !projectRel) return;
@@ -354,6 +348,14 @@ export function ProjectWorkspacePage() {
           />
         </div>
       </div>
+
+      {/* Build drawer — terminal, Error Center, Auto-Fix */}
+      <BuildDrawer
+        project={project}
+        open={drawerOpen}
+        onToggle={setDrawerOpen}
+        buildStatus={project.last_build_status}
+      />
     </div>
   );
 }

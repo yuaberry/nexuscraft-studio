@@ -11,6 +11,7 @@ interface ProjectsState {
   hydrate: () => Promise<void>;
   addProject: (project: ProjectRecord) => void;
   removeProject: (id: string) => Promise<void>;
+  patchProject: (id: string, patch: Partial<ProjectRecord>) => void;
   getProject: (id: string) => ProjectRecord | undefined;
 }
 
@@ -30,6 +31,12 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => ({
   removeProject: async (id) => {
     await removeProject(id);
     set((state) => ({ projects: state.projects.filter((p) => p.id !== id) }));
+  },
+
+  patchProject: (id, patch) => {
+    set((state) => ({
+      projects: state.projects.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+    }));
   },
 
   getProject: (id) => get().projects.find((p) => p.id === id),

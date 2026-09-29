@@ -261,6 +261,21 @@ function ProjectRow({ project, onOpen }: { project: ProjectRecord; onOpen: () =>
           <Clock className="h-3 w-3" />
           {formatRelativeTime(project.updated_at)}
         </span>
+        {project.last_build_status && (
+          <span className="mt-0.5 flex items-center gap-1 text-[9px] text-muted-foreground/70">
+            <span
+              className={
+                "h-1.5 w-1.5 rounded-full " +
+                (project.last_build_status === "success"
+                  ? "bg-emerald-400"
+                  : project.last_build_status === "failed"
+                    ? "bg-red-400"
+                    : "bg-muted-foreground/40")
+              }
+            />
+            build {project.last_build_status}
+          </span>
+        )}
         <span className="mt-1 text-[10px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
           Open →
         </span>
