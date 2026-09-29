@@ -9,8 +9,8 @@ import { HomePage } from "@/features/home/HomePage";
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
 import { ProjectWorkspacePage } from "@/features/projects/workspace/ProjectWorkspacePage";
 import { AiCreatorPage } from "@/features/ai-creator/AiCreatorPage";
+import { ServersPage } from "@/features/servers/ServersPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
-import { RoadmapPage } from "@/features/roadmap/RoadmapPage";
 
 export default function App() {
   const loaded = useSettingsStore((s) => s.loaded);
@@ -44,35 +44,7 @@ export default function App() {
               <Route path="projects" element={<ProjectsPage />} />
               <Route path="projects/:projectId" element={<ProjectWorkspacePage />} />
               <Route path="ai-creator" element={<AiCreatorPage />} />
-              <Route
-                path="servers"
-                element={
-                  <RoadmapPage
-                    phase="Fase 6"
-                    title="Servers"
-                    subtitle="Server Studio — create, run and manage local servers"
-                    description="Spin up vanilla or Paper servers through a wizard, watch a live console, edit configuration from the UI and schedule automatic world backups."
-                    items={[
-                      {
-                        title: "Server wizard",
-                        body: "Name, version, software, world and security in one flow.",
-                      },
-                      {
-                        title: "Live console",
-                        body: "Real-time stdout/stderr wired directly to the server process.",
-                      },
-                      {
-                        title: "Backups",
-                        body: "Manual and scheduled restore points of worlds and configs.",
-                      },
-                      {
-                        title: "Deployment-ready",
-                        body: "Provider abstraction prepared for VPS, Docker and SSH.",
-                      },
-                    ]}
-                  />
-                }
-              />
+              <Route path="servers" element={<ServersPage />} />
               <Route path="settings" element={<Navigate to="/settings/general" replace />} />
               <Route path="settings/:section" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -13,7 +13,7 @@ O que está por vir aparece como roadmap honesto.
 
 ---
 
-## Status atual — Fases 0 a 5 (concluídas)
+## Status atual — Fases 0 a 6 (concluídas)
 
 | Sistema | Estado |
 |---|---|
@@ -46,10 +46,13 @@ O que está por vir aparece como roadmap honesto.
 | **Fase 5:** Downloads oficiais verificados por SHA-1 (client, libs, assets, natives) — E2E: 3.695 arquivos/718 MB | ✅ |
 | **Fase 5:** Auth Microsoft legítima via device flow (client id configurável) — zero bypass | ✅ |
 | **Fase 5:** Botão **Run**: lança Minecraft com o mod compilado instalado | ✅ |
+| **Fase 6:** Server Studio — wizard vanilla/Paper com jar oficial verificado | ✅ |
+| **Fase 6:** Console real em tempo real + comandos via stdin + editor de properties | ✅ |
+| **Fase 6:** Stop world-safe com fallback de força (30s) + aviso Java 21/1.20.x | ✅ |
+| **Fase 6:** Backups timestamped (zip) + restore — E2E: ciclo completo provado | ✅ |
 
 ## Roadmap
 
-- **Fase 6** — Server Studio: criar/gerir servidores locais, console, backups
 - **Fase 7** — GitHub + projeto exemplo "Dark Kingdom" ponta a ponta
 
 ## Criando o primeiro projeto
@@ -69,6 +72,11 @@ prepara a instância isolada com arquivos oficiais da Mojang (compartilhados
 entre projetos); depois é instantâneo. Requer Microsoft sign-in uma única vez
 (**Settings → Launcher** — device flow legítimo; registre um app gratuito no
 Azure e cole o client id).
+
+**Servidores**: aba Servers → Create server (vanilla/Paper, versão do catálogo
+ao vivo, jar oficial com checksum). Console em tempo real, `stop` world-safe
+(com fallback automático), backups zip com restore e editor de
+server.properties — tudo local.
 
 O template é parametrizado por versão: yarn mappings (legado 1.x) ou official
 Mojang mappings (novo esquema 26.x), Java release correto e Fabric API

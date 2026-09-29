@@ -163,3 +163,27 @@ export interface AiConnectionTestResult {
   latencyMs: number;
   details?: Record<string, string>;
 }
+
+export type ServerSoftware = "vanilla" | "paper";
+
+export interface ServerRecord {
+  id: string;
+  name: string;
+  slug: string;
+  software: ServerSoftware;
+  minecraft_version: string;
+  path: string;
+  port: number;
+  ram_mb: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServerBackupInfo {
+  id: string;
+  fileName: string;
+  path: string;
+  sizeBytes: number;
+  createdAt: string;
+}

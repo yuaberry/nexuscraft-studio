@@ -72,7 +72,7 @@ Wizard, start/stop, console, backups. Prison/SkyBlock/economia ficam em template
 | 3 ✅ | Nexus Agent | 12 tools com sandbox; auditoria; "Voidcutter" → arquivos reais |
 | 4 ✅ | Build System | `./gradlew build` ao vivo; Error Center; Auto-Fix ≤5; **E2E: jar compilado** |
 | 5 ✅ | Instâncias + Launcher | Downloads oficiais SHA-1 (E2E 718MB); device flow MSA (client id configurável); RUN lança com o mod |
-| 6 | Server Studio | Servidor Paper local: start, console real, backup/restore |
+| 6 ✅ | Server Studio | E2E: vanilla 1.20.1 boot→stop→backup→restore provado; Paper via Fill API; stdin console |
 | 7 | GitHub + E2E | Dark Kingdom: Create → Build → Run; push para GitHub |
 
 ## Regras de desenvolvimento
