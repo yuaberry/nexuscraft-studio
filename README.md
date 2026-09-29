@@ -13,7 +13,7 @@ O que está por vir aparece como roadmap honesto.
 
 ---
 
-## Status atual — Fases 0, 1 e 2 (concluídas)
+## Status atual — Fases 0, 1, 2 e 3 (concluídas)
 
 | Sistema | Estado |
 |---|---|
@@ -35,10 +35,12 @@ O que está por vir aparece como roadmap honesto.
 | **Fase 2:** Reference Board — imagens no projeto (`.nexus/references/`), anexadas como vision | ✅ |
 | **Fase 2:** Version Catalog auto-atualizável — Mojang + Fabric + Forge + NeoForge + Paper (TTL 12h) | ✅ |
 | **Fase 2:** Wizard com versão selecionável — novo esquema 26.x e legado 1.21.x/1.20.x | ✅ |
+| **Fase 3:** Nexus Agent — 12 tools com sandbox, 3 camadas de policy, auditoria em `ai_tool_calls` | ✅ |
+| **Fase 3:** Orquestrador com orçamento (8 steps / 30 writes) + snapshot automático pré-escrita | ✅ |
+| **Fase 3:** Timeline de execução na UI, confirmação para destrutivos, painel Changes (git diff) | ✅ |
 
 ## Roadmap
 
-- **Fase 3** — Nexus Agent: tools com sandbox Rust, allowlist, auditoria
 - **Fase 4** — Build System: Gradle, Error Center, Auto-Fix
 - **Fase 5** — Instâncias isoladas + Launcher (Run Minecraft com o mod)
 - **Fase 6** — Server Studio: criar/gerir servidores locais, console, backups
@@ -50,7 +52,7 @@ O que está por vir aparece como roadmap honesto.
 2. **Projects → Create project** (ou Ctrl+K → "Create new project")
 3. Escolha a **versão do Minecraft** no catálogo ao vivo (sync automático: Mojang oficial + Fabric/Forge/NeoForge/Paper) e digite um nome → Create
 4. O workspace abre com explorer, editor Monaco e painel de snapshots
-5. **AI Creator** — descreva o design; a IA propõe o `project-spec.json` com o projeto como contexto
+5. **AI Creator** — no **Agent mode**, peça: *"add a Voidcutter sword: item, model, lang and recipe"* — a IA lê o projeto, edita os arquivos via tools sandboxadas (com auditoria e snapshot automático) e você revisa o diff na aba Changes
 
 O template é parametrizado por versão: yarn mappings (legado 1.x) ou official
 Mojang mappings (novo esquema 26.x), Java release correto e Fabric API

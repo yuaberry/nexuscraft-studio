@@ -1,10 +1,28 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, ImagePlus, Loader2, Square, Sparkles } from "lucide-react";
+import {
+  ArrowUp,
+  Bot,
+  Check,
+  FileDiff,
+  ImagePlus,
+  Loader2,
+  Search,
+  ShieldCheck,
+  Square,
+  Sparkles,
+  Terminal,
+  Wrench,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
+
+/** Timeline entry rendered in the chat column. */
+export type ToolStatus = "running" | "ok" | "error" | "denied";
 
 export interface DisplayMessage {
   role: "user" | "assistant";
@@ -12,9 +30,29 @@ export interface DisplayMessage {
   streaming?: boolean;
 }
 
+export interface ToolActivity {
+  kind: "tool";
+  callId: string;
+  tool: string;
+  summary: string;
+  status: ToolStatus;
+  output?: string;
+  requiresConfirmation?: boolean;
+}
+
+export interface SnapshotActivity {
+  kind: "snapshot";
+  label: string;
+}
+
+export type TimelineEntry = DisplayMessage | ToolActivity | SnapshotActivity;
+
 interface Props {
-  messages: DisplayMessage[];
-  streaming: boolean;
+  messages: TimelineEntry[];
+  busy: boolean;
+  thinking: boolean;
+  agentMode: boolean;
+  onToggleAgentMode: (enabled: boolean) => void;
   attachedCount: number;
   hasProject: boolean;
   onSend: (text: string) => Promise<void>;
@@ -24,7 +62,10 @@ interface Props {
 
 export function ChatPanel({
   messages,
-  streaming,
+  busy,
+  thinking,
+  agentMode,
+  onToggleAgentMode,
   attachedCount,
   hasProject,
   onSend,
@@ -38,7 +79,7 @@ export function ChatPanel({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const canSend = hasProject && draft.trim().length > 0 && !streaming;
+  const canSend = hasProject && draft.trim().length > 0 && !busy;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -59,52 +100,79 @@ export function ChatPanel({
           <Sparkles className="h-3.5 w-3.5 text-primary" />
           AI Creator
         </span>
-        <button
-          className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-          onClick={onNewChat}
-          title="Start a fresh conversation (history stays in the database)"
-        >
-          New chat
-        </button>
+        <div className="flex items-center gap-3">
+          <label className="flex cursor-pointer items-center gap-2" title="Agent mode: the AI can read and modify project files through sandboxed tools">
+            <span className={cn("text-[11px] font-medium", agentMode ? "text-primary" : "text-muted-foreground")}>
+              Agent mode
+            </span>
+            <Switch checked={agentMode} onCheckedChange={onToggleAgentMode} />
+          </label>
+          <button
+            className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            onClick={onNewChat}
+            title="Start a fresh conversation (history stays in the database)"
+          >
+            New chat
+          </button>
+        </div>
       </div>
 
-      {/* Messages */}
+      {/* Timeline */}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 ? (
-          <EmptyChat hasProject={hasProject} />
+          <EmptyChat hasProject={hasProject} agentMode={agentMode} />
         ) : (
           <div className="space-y-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "flex",
-                  message.role === "user" ? "justify-end" : "justify-start",
-                )}
-              >
+            {messages.map((entry, index) => {
+              if ("kind" in entry) {
+                if (entry.kind === "tool") {
+                  return <ToolCard key={`${entry.callId}-${index}`} activity={entry} />;
+                }
+                return (
+                  <div key={`snap-${index}`} className="flex justify-center">
+                    <Badge variant="secondary" className="gap-1 py-1">
+                      <ShieldCheck className="h-3 w-3" />
+                      snapshot {entry.label} created
+                    </Badge>
+                  </div>
+                );
+              }
+              const message = entry as DisplayMessage;
+              return (
                 <div
-                  className={cn(
-                    "max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed",
-                    message.role === "user"
-                      ? "bg-primary/15 text-foreground"
-                      : "border border-border/60 bg-card/70 text-foreground/95",
-                  )}
+                  key={index}
+                  className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
                 >
-                  {message.role === "user" ? (
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                  ) : (
-                    <div className="chat-md">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {message.content}
-                      </ReactMarkdown>
-                      {message.streaming && (
-                        <span className="mt-1 inline-block h-4 w-1.5 animate-pulse-soft bg-primary align-middle" />
-                      )}
-                    </div>
-                  )}
+                  <div
+                    className={cn(
+                      "max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed",
+                      message.role === "user"
+                        ? "bg-primary/15 text-foreground"
+                        : "border border-border/60 bg-card/70 text-foreground/95",
+                    )}
+                  >
+                    {message.role === "user" ? (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    ) : (
+                      <div className="chat-md">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                        {message.streaming && (
+                          <span className="mt-1 inline-block h-4 w-1.5 animate-pulse-soft bg-primary align-middle" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {thinking && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card/70 px-4 py-2.5 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                  {agentMode ? "Agent is planning its steps…" : "Generating…"}
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
         <div ref={bottomRef} />
@@ -112,6 +180,14 @@ export function ChatPanel({
 
       {/* Composer */}
       <div className="border-t border-border/60 p-3">
+        {agentMode && (
+          <div className="mb-2 flex items-center gap-1.5">
+            <Badge variant="default" className="gap-1">
+              <Wrench className="h-3 w-3" /> 12 sandboxed tools active
+            </Badge>
+            <Badge variant="outline">auto-snapshot before writes</Badge>
+          </div>
+        )}
         {attachedCount > 0 && (
           <div className="pb-2">
             <Badge variant="secondary">
@@ -125,18 +201,20 @@ export function ChatPanel({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={!hasProject}
+            disabled={!hasProject || busy}
             placeholder={
-              hasProject
-                ? "Describe what to build… (Enter to send, Shift+Enter for a new line)"
-                : "Select a project first"
+              !hasProject
+                ? "Select a project first"
+                : agentMode
+                  ? "Tell the agent what to build… e.g. \"add a Voidcutter sword with a recipe\""
+                  : "Describe what to build… (Enter to send, Shift+Enter for a new line)"
             }
             rows={3}
             className="w-full resize-none rounded-lg border border-input bg-background/60 px-3 py-2.5 pr-12 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
           />
           <div className="absolute bottom-2.5 right-2.5">
-            {streaming ? (
-              <Button size="icon" variant="secondary" className="h-8 w-8" onClick={onStop} title="Stop generation">
+            {busy ? (
+              <Button size="icon" variant="secondary" className="h-8 w-8" onClick={onStop} title="Stop">
                 <Square className="h-3.5 w-3.5" />
               </Button>
             ) : (
@@ -157,40 +235,116 @@ export function ChatPanel({
             )}
           </div>
         </div>
-        {streaming && (
-          <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Generating — the model is writing to your project…
-          </p>
+      </div>
+    </div>
+  );
+}
+
+const TOOL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  read_file: Search,
+  write_file: Wrench,
+  edit_file: Wrench,
+  delete_file: X,
+  rename_file: FileDiff,
+  create_directory: Terminal,
+  list_files: Search,
+  search_project: Search,
+  inspect_dependencies: Terminal,
+  git_status: FileDiff,
+  git_diff: FileDiff,
+  create_snapshot: ShieldCheck,
+  list_snapshots: ShieldCheck,
+};
+
+function ToolCard({ activity }: { activity: ToolActivity }) {
+  const [open, setOpen] = useState(false);
+  const Icon = TOOL_ICONS[activity.tool] ?? Bot;
+
+  return (
+    <div className="flex justify-start">
+      <div
+        className={cn(
+          "w-[85%] overflow-hidden rounded-xl border text-xs",
+          activity.status === "running" && "border-primary/40 bg-primary/5",
+          activity.status === "ok" && "border-emerald-500/25 bg-emerald-500/5",
+          activity.status === "error" && "border-red-500/30 bg-red-500/5",
+          activity.status === "denied" && "border-amber-500/30 bg-amber-500/5",
+        )}
+      >
+        <button
+          className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left"
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span
+            className={cn(
+              "flex h-5 w-5 shrink-0 items-center justify-center rounded-md",
+              activity.status === "ok" && "bg-emerald-500/15 text-emerald-400",
+              activity.status === "error" && "bg-red-500/15 text-red-400",
+              activity.status === "denied" && "bg-amber-500/15 text-amber-400",
+              activity.status === "running" && "bg-primary/15 text-primary",
+            )}
+          >
+            {activity.status === "running" ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : activity.status === "ok" ? (
+              <Check className="h-3 w-3" />
+            ) : activity.status === "denied" ? (
+              <X className="h-3 w-3" />
+            ) : (
+              <X className="h-3 w-3" />
+            )}
+          </span>
+          <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+          <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-foreground/90">
+            <span className="text-muted-foreground">{activity.tool}</span>{" "}
+            {activity.summary}
+          </span>
+          {activity.output && (
+            <span className="shrink-0 text-[9px] uppercase tracking-wide text-muted-foreground/50">
+              {open ? "hide" : "output"}
+            </span>
+          )}
+        </button>
+        {open && activity.output && (
+          <pre className="max-h-48 overflow-auto border-t border-border/50 bg-background/60 px-3.5 py-2.5 font-mono text-[10px] leading-relaxed text-muted-foreground">
+            {activity.output}
+          </pre>
         )}
       </div>
     </div>
   );
 }
 
-function EmptyChat({ hasProject }: { hasProject: boolean }) {
+function EmptyChat({ hasProject, agentMode }: { hasProject: boolean; agentMode: boolean }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
       <div className="rounded-xl bg-secondary/60 p-3">
-        <Sparkles className="h-6 w-6 text-muted-foreground/60" />
+        {agentMode ? (
+          <Bot className="h-6 w-6 text-muted-foreground/60" />
+        ) : (
+          <Sparkles className="h-6 w-6 text-muted-foreground/60" />
+        )}
       </div>
       {hasProject ? (
         <>
           <p className="text-sm font-medium text-foreground/90">
-            Design with the project as context
+            {agentMode
+              ? "The agent edits the project with you"
+              : "Design with the project as context"}
           </p>
           <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">
-            The AI reads this project's spec, style bible and files before
-            answering. Try:{" "}
+            {agentMode
+              ? "Every read and write passes through the Rust sandbox, is audited and auto-snapshotted. Try: "
+              : "The AI reads this project's spec, style bible and files before answering. Try: "}
             <span className="text-primary/90">
-              "Design the project specification for a dark medieval RPG"
+              {agentMode
+                ? "\"Add a Voidcutter sword: item, model, lang and recipe\""
+                : "\"Design the project specification for a dark medieval RPG\""}
             </span>
           </p>
         </>
       ) : (
-        <p className="max-w-xs text-xs text-muted-foreground">
-          Select a project above to start.
-        </p>
+        <p className="max-w-xs text-xs text-muted-foreground">Select a project above to start.</p>
       )}
     </div>
   );

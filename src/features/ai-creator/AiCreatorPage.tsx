@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProjectsStore } from "@/stores/projectsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { ChatPanel, type DisplayMessage } from "./ChatPanel";
+import { useUiStore } from "@/stores/uiStore";
+import {
+  ChatPanel,
+  type DisplayMessage,
+  type TimelineEntry,
+  type ToolActivity,
+  type ToolStatus,
+} from "./ChatPanel";
 import { InspectorPanel } from "./InspectorPanel";
 import { SpecPreview } from "./SpecPreview";
 import {
@@ -16,6 +23,7 @@ import {
   loadProjectContext,
   type ProjectContext,
 } from "@/services/ai/contextService";
+import { runAgent } from "@/services/ai/agent/orchestrator";
 import {
   setReferenceStorageBase,
   listReferences,
@@ -30,11 +38,32 @@ import {
 import { secretsGet, AI_API_KEY_ID } from "@/services/secrets/secretsService";
 import { getProviderMeta } from "@/services/ai/providers";
 import { extractSpecProposal } from "./specUtils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Boxes, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Boxes, ShieldAlert, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+
+interface ConfirmRequest {
+  tool: string;
+  summary: string;
+  resolve: (approved: boolean) => void;
+}
 
 export function AiCreatorPage() {
   const navigate = useNavigate();
@@ -52,11 +81,15 @@ export function AiCreatorPage() {
 
   const [session, setSession] = useState<AiSessionRecord | null>(null);
   const [context, setContext] = useState<ProjectContext | null>(null);
-  const [messages, setMessages] = useState<DisplayMessage[]>([]);
-  const [streaming, setStreaming] = useState(false);
+  const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [agentMode, setAgentMode] = useState(true);
   const [specProposal, setSpecProposal] = useState<string | null>(null);
   const [references, setReferences] = useState<ReferenceImage[]>([]);
   const [attached, setAttached] = useState<Set<string>>(new Set());
+  const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null);
+  const [changesKey, setChangesKey] = useState(0);
 
   const streamRef = useRef<AsyncGenerator<unknown, void, unknown> | null>(null);
   const abortRef = useRef(false);
@@ -65,7 +98,6 @@ export function AiCreatorPage() {
     if (!projectsLoaded) void hydrateProjects();
   }, [projectsLoaded, hydrateProjects]);
 
-  // Default to the most recent project once
   useEffect(() => {
     if (!projectId && projects.length > 0) setProjectId(projects[0].id);
   }, [projectId, projects]);
@@ -79,7 +111,7 @@ export function AiCreatorPage() {
     if (!project) {
       setSession(null);
       setContext(null);
-      setMessages([]);
+      setTimeline([]);
       setReferences([]);
       setSpecProposal(null);
       return;
@@ -100,23 +132,17 @@ export function AiCreatorPage() {
           setSession(latest);
           const history = await listMessages(latest.id);
           if (cancelled) return;
-          setMessages(
+          setTimeline(
             history
-              .map((m): DisplayMessage | null =>
-                m.role === "user" || m.role === "assistant"
-                  ? { role: m.role, content: m.content }
-                  : null,
-              )
-              .filter((m): m is DisplayMessage => m !== null),
+              .filter((m) => m.role === "user" || m.role === "assistant")
+              .map((m) => ({ role: m.role, content: m.content }) as DisplayMessage),
           );
         } else {
           setSession(null);
-          setMessages([]);
+          setTimeline([]);
         }
       } catch (error) {
-        toast.error("Could not load project context", {
-          description: String(error),
-        });
+        toast.error("Could not load project context", { description: String(error) });
       }
     })();
     return () => {
@@ -132,62 +158,58 @@ export function AiCreatorPage() {
     return created;
   }, [session, project]);
 
-  const handleSend = useCallback(
-    async (text: string) => {
-      if (!project || !context) return;
-      if (streaming) return;
+  const textHistory = useCallback(
+    (): Array<{ role: "user" | "assistant"; content: string }> =>
+      timeline
+        .filter((e): e is DisplayMessage => "role" in e)
+        .map((m) => ({ role: m.role, content: m.content })),
+    [timeline],
+  );
 
+  const requireApiKeyAndModel = async (): Promise<boolean> => {
+    const meta = getProviderMeta(aiSettings.provider);
+    if (meta.requiresKey && !(await secretsGet(AI_API_KEY_ID))) {
+      toast.error("Configure your API key first", { description: "Settings → AI → API key" });
+      navigate("/settings/ai");
+      return false;
+    }
+    if (!aiSettings.model.trim()) {
+      toast.error("Choose a model first", { description: "Settings → AI → Model" });
+      navigate("/settings/ai");
+      return false;
+    }
+    return true;
+  };
+
+  // -------------------------------------------------------------------------
+  // Design chat (streaming, no tools)
+  // -------------------------------------------------------------------------
+  const runDesignTurn = useCallback(
+    async (text: string, activeSession: AiSessionRecord) => {
+      if (!project || !context) return;
       const meta = getProviderMeta(aiSettings.provider);
       const apiKey = meta.requiresKey ? await secretsGet(AI_API_KEY_ID) : null;
-      if (meta.requiresKey && !apiKey) {
-        toast.error("Configure your API key first", {
-          description: "Settings → AI → API key",
-        });
-        navigate("/settings/ai");
-        return;
-      }
-      if (!aiSettings.model.trim()) {
-        toast.error("Choose a model first", { description: "Settings → AI → Model" });
-        navigate("/settings/ai");
-        return;
-      }
 
-      const activeSession = await ensureSession();
-
-      // Vision parts for attached references
       const imageParts: ImagePart[] = [];
       for (const relPath of attached) {
         try {
           const { base64, mediaType } = await readReferenceBase64(project.slug, relPath);
           imageParts.push({ type: "image", mediaType, base64 });
         } catch (error) {
-          toast.warning(`Could not attach ${relPath.split("/").pop()}`, {
-            description: String(error),
-          });
+          toast.warning(`Could not attach ${relPath.split("/").pop()}`, { description: String(error) });
         }
       }
 
-      const userMessage: DisplayMessage = { role: "user", content: text };
-      setMessages((prev) => [...prev, userMessage]);
-      setStreaming(true);
+      setThinking(true);
       abortRef.current = false;
-
-      try {
-        await appendMessage(activeSession.id, "user", text);
-      } catch (e) {
-        console.warn("Failed to persist user message", e);
-      }
 
       const history: ChatMessage[] = [
         { role: "system", content: buildSystemPrompt(context) },
-        ...messages.map((m) => ({ role: m.role, content: m.content })),
+        ...textHistory().map((m) => ({ role: m.role, content: m.content })),
       ];
       history.push({
         role: "user",
-        content:
-          imageParts.length > 0
-            ? [{ type: "text", text } as const, ...imageParts]
-            : text,
+        content: imageParts.length > 0 ? [{ type: "text", text } as const, ...imageParts] : text,
       });
 
       let full = "";
@@ -202,11 +224,11 @@ export function AiCreatorPage() {
             | { type: "error"; message: string };
           if (typed.type === "delta") {
             full += typed.text;
-            setMessages((prev) => {
+            setTimeline((prev) => {
               const next = [...prev];
               const last = next[next.length - 1];
-              if (last?.role === "assistant" && last.streaming) {
-                next[next.length - 1] = { ...last, content: full };
+              if (last && "role" in last && last.role === "assistant" && last.streaming) {
+                next[next.length - 1] = { ...last, content: full, streaming: true };
               } else {
                 next.push({ role: "assistant", content: full, streaming: true });
               }
@@ -223,32 +245,159 @@ export function AiCreatorPage() {
         toast.error("AI request failed", { description: String(error) });
       } finally {
         streamRef.current = null;
-        setStreaming(false);
-        // finalize the assistant bubble
-        setMessages((prev) =>
-          prev.map((m, i) =>
-            i === prev.length - 1 && m.role === "assistant"
-              ? { ...m, streaming: false }
-              : m,
-          ),
+        setThinking(false);
+        setTimeline((prev) =>
+          prev.map((e, i) => {
+            const last = i === prev.length - 1;
+            if (last && "role" in e && e.role === "assistant") {
+              return { ...e, streaming: false };
+            }
+            return e;
+          }),
         );
-        if (full.trim().length > 0) {
-          try {
-            await appendMessage(activeSession.id, "assistant", full);
-          } catch (e) {
-            console.warn("Failed to persist assistant message", e);
-          }
+        if (full.trim()) {
+          await appendMessage(activeSession.id, "assistant", full).catch(() => {});
           const proposal = extractSpecProposal(full);
           if (proposal) {
             setSpecProposal(proposal);
-            toast.success("Specification proposal ready", {
-              description: "Review and save it in the center panel.",
-            });
+            toast.success("Specification proposal ready");
           }
         }
       }
     },
-    [project, context, aiSettings, messages, attached, streaming, ensureSession, navigate],
+    [project, context, aiSettings, attached, textHistory],
+  );
+
+  // -------------------------------------------------------------------------
+  // Agent run (tool loop)
+  // -------------------------------------------------------------------------
+  const runAgentTurn = useCallback(
+    async (text: string, activeSession: AiSessionRecord) => {
+      if (!project || !context || !basePath) return;
+      setThinking(true);
+      abortRef.current = false;
+
+      const upsertTool = (callId: string, patch: Partial<ToolActivity>) => {
+        setTimeline((prev) => {
+          const index = prev.findIndex(
+            (e) => "callId" in e && e.callId === callId,
+          );
+          if (index === -1) return prev;
+          const next = [...prev];
+          next[index] = { ...next[index], ...patch } as TimelineEntry;
+          return next;
+        });
+      };
+
+      try {
+        const result = await runAgent({
+          settings: aiSettings,
+          project,
+          context,
+          basePath,
+          sessionId: activeSession.id,
+          history: textHistory(),
+          userText: text,
+          shouldAbort: () => abortRef.current,
+          onEvent: (event) => {
+            switch (event.type) {
+              case "snapshot":
+                setTimeline((prev) => [...prev, { kind: "snapshot", label: event.label }]);
+                break;
+              case "tool_start":
+                setTimeline((prev) => [
+                  ...prev,
+                  {
+                    kind: "tool",
+                    callId: event.callId,
+                    tool: event.tool,
+                    summary: event.summary,
+                    status: "running" as ToolStatus,
+                    requiresConfirmation: event.requiresConfirmation,
+                  },
+                ]);
+                break;
+              case "tool_result":
+                upsertTool(event.callId, {
+                  status: event.ok ? ("ok" as ToolStatus) : ("error" as ToolStatus),
+                  output: event.output,
+                });
+                break;
+              case "text":
+                setTimeline((prev) => [...prev, { role: "assistant", content: event.text }]);
+                break;
+              case "thinking":
+                break;
+            }
+          },
+          confirm: (tool, summary) =>
+            new Promise<boolean>((resolve) => {
+              setConfirmRequest({ tool, summary, resolve });
+            }),
+        });
+
+        if (result.text.trim()) {
+          await appendMessage(activeSession.id, "assistant", result.text).catch(() => {});
+          const proposal = extractSpecProposal(result.text);
+          if (proposal) {
+            setSpecProposal(proposal);
+            toast.success("Specification proposal ready");
+          }
+          if (result.writes > 0) {
+            setChangesKey((k) => k + 1);
+            toast.success(`Agent finished — ${result.writes} file operation(s)`, {
+              description: "Review the diff in the Changes tab.",
+            });
+          }
+        }
+      } catch (error) {
+        toast.error("Agent run failed", { description: String(error) });
+      } finally {
+        setThinking(false);
+        await refreshContext();
+      }
+    },
+    [project, context, basePath, aiSettings, textHistory],
+  );
+
+  const refreshContext = useCallback(async () => {
+    if (!project) return;
+    try {
+      setContext(await loadProjectContext(project));
+    } catch {
+      // context refresh is best-effort
+    }
+  }, [project]);
+
+  const handleSend = useCallback(
+    async (text: string) => {
+      if (!project || !context || busy) return;
+      if (!(await requireApiKeyAndModel())) return;
+
+      const activeSession = await ensureSession();
+      setTimeline((prev) => [...prev, { role: "user", content: text }]);
+      setBusy(true);
+      try {
+        await appendMessage(activeSession.id, "user", text).catch(() => {});
+        if (agentMode) {
+          await runAgentTurn(text, activeSession);
+        } else {
+          await runDesignTurn(text, activeSession);
+        }
+      } finally {
+        setBusy(false);
+      }
+    },
+    [
+      project,
+      context,
+      busy,
+      requireApiKeyAndModel,
+      ensureSession,
+      agentMode,
+      runAgentTurn,
+      runDesignTurn,
+    ],
   );
 
   const handleStop = useCallback(() => {
@@ -258,14 +407,9 @@ export function AiCreatorPage() {
 
   const handleNewChat = useCallback(() => {
     setSession(null);
-    setMessages([]);
+    setTimeline([]);
     setSpecProposal(null);
   }, []);
-
-  const refreshContext = useCallback(async () => {
-    if (!project) return;
-    setContext(await loadProjectContext(project));
-  }, [project]);
 
   if (projectsLoaded && projects.length === 0) {
     return (
@@ -276,13 +420,13 @@ export function AiCreatorPage() {
         <div>
           <p className="text-lg font-semibold">The AI Creator needs a project</p>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
-            The AI operates on a real project on disk — spec, files, style bible
-            and context. Create one first, then come back to design with it.
+            The agent operates on a real project on disk — spec, files, style
+            bible and context. Create one first, then come back to build with it.
           </p>
         </div>
         <button
           className="btn-ghost text-sm text-primary hover:underline"
-          onClick={() => useUiStoreSafeOpenWizard()}
+          onClick={() => useUiStore.getState().setCreateWizardOpen(true)}
         >
           Create project
         </button>
@@ -332,18 +476,26 @@ export function AiCreatorPage() {
       {/* 3 columns */}
       <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_300px]">
         <ChatPanel
-          messages={messages}
-          streaming={streaming}
+          messages={timeline}
+          busy={busy || thinking}
+          thinking={thinking}
+          agentMode={agentMode}
+          onToggleAgentMode={setAgentMode}
           attachedCount={attached.size}
+          hasProject={project !== null}
           onSend={handleSend}
           onStop={handleStop}
           onNewChat={handleNewChat}
-          hasProject={project !== null}
         />
         <SpecPreview
           context={context}
           proposal={specProposal}
-          onSaved={() => void refreshContext()}
+          projectSlug={project?.slug ?? null}
+          changesRefreshKey={changesKey}
+          onSaved={() => {
+            void refreshContext();
+            setChangesKey((k) => k + 1);
+          }}
         />
         <InspectorPanel
           context={context}
@@ -359,11 +511,53 @@ export function AiCreatorPage() {
           }}
         />
       </div>
+
+      {/* Destructive-tool confirmation (policy layer 3) */}
+      <Dialog
+        open={confirmRequest !== null}
+        onOpenChange={(open) => {
+          if (!open && confirmRequest) {
+            confirmRequest.resolve(false);
+            setConfirmRequest(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-amber-400" />
+              Confirm {confirmRequest?.tool}?
+            </DialogTitle>
+            <DialogDescription>
+              The agent wants to run a destructive operation on the project.
+              The working tree is snapshotted, so restores are always possible.
+            </DialogDescription>
+          </DialogHeader>
+          <p className="rounded-lg border border-border/70 bg-card/60 px-3 py-2 font-mono text-xs">
+            {confirmRequest?.summary}
+          </p>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                confirmRequest?.resolve(false);
+                setConfirmRequest(null);
+              }}
+            >
+              Deny
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                confirmRequest?.resolve(true);
+                setConfirmRequest(null);
+              }}
+            >
+              Allow once
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-}
-
-/** Small helper to avoid importing the whole ui store here twice. */
-function useUiStoreSafeOpenWizard() {
-  import("@/stores/uiStore").then((m) => m.useUiStore.getState().setCreateWizardOpen(true));
 }

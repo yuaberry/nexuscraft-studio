@@ -142,3 +142,57 @@ export async function deleteProjectFromDisk(
 ): Promise<void> {
   await invoke("delete_project_entry", { basePath, projectRel });
 }
+
+// ---------------------------------------------------------------------------
+// Nexus Agent tool wrappers (Phase 3)
+// ---------------------------------------------------------------------------
+
+export interface EditFileResult {
+  occurrences: number;
+  new_length: number;
+}
+
+export async function editProjectFile(
+  basePath: string,
+  rel: string,
+  find: string,
+  replace: string,
+  replaceAll: boolean,
+): Promise<EditFileResult> {
+  return invoke<EditFileResult>("edit_project_file", {
+    basePath,
+    rel,
+    find,
+    replace,
+    replaceAll,
+  });
+}
+
+export interface SearchMatch {
+  path: string;
+  line_number: number;
+  line_text: string;
+}
+
+export async function searchProject(
+  basePath: string,
+  projectRel: string,
+  query: string,
+  caseSensitive = false,
+  maxResults = 50,
+): Promise<SearchMatch[]> {
+  return invoke<SearchMatch[]>("search_project", {
+    basePath,
+    projectRel,
+    query,
+    caseSensitive,
+    maxResults,
+  });
+}
+
+export async function projectGitDiff(
+  basePath: string,
+  projectRel: string,
+): Promise<string> {
+  return invoke<string>("project_git_diff", { basePath, projectRel });
+}
