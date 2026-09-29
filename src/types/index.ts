@@ -34,6 +34,12 @@ export interface StorageSettings {
   basePath: string;
 }
 
+export interface LauncherSettings {
+  /** Azure (MSA) application client id — required for device-flow sign-in. */
+  clientId: string;
+  ramMb: number;
+}
+
 export interface AppSettings {
   general: GeneralSettings;
   appearance: AppearanceSettings;
@@ -41,6 +47,7 @@ export interface AppSettings {
   minecraft: MinecraftSettings;
   java: JavaSettings;
   storage: StorageSettings;
+  launcher: LauncherSettings;
 }
 
 export type ProjectType = "mod";

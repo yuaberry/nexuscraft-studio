@@ -13,7 +13,7 @@ O que está por vir aparece como roadmap honesto.
 
 ---
 
-## Status atual — Fases 0, 1, 2, 3 e 4 (concluídas)
+## Status atual — Fases 0 a 5 (concluídas)
 
 | Sistema | Estado |
 |---|---|
@@ -42,10 +42,13 @@ O que está por vir aparece como roadmap honesto.
 | **Fase 4:** Error Center categorizado + Auto-Fix com o agent (máx. 5 tentativas, destrutivos recusados) | ✅ |
 | **Fase 4:** E2E provado — template compilou de verdade: `e2e-dark-kingdom-0.1.0.jar` (Gradle 8.8 + Loom) | ✅ |
 | **Fase 4:** Cache Gradle compartilhado pré-aquecido (476 MB) | ✅ |
+| **Fase 5:** Instâncias isoladas por projeto (`instances/<slug>/`) | ✅ |
+| **Fase 5:** Downloads oficiais verificados por SHA-1 (client, libs, assets, natives) — E2E: 3.695 arquivos/718 MB | ✅ |
+| **Fase 5:** Auth Microsoft legítima via device flow (client id configurável) — zero bypass | ✅ |
+| **Fase 5:** Botão **Run**: lança Minecraft com o mod compilado instalado | ✅ |
 
 ## Roadmap
 
-- **Fase 5** — Instâncias isoladas + Launcher (Run Minecraft com o mod)
 - **Fase 6** — Server Studio: criar/gerir servidores locais, console, backups
 - **Fase 7** — GitHub + projeto exemplo "Dark Kingdom" ponta a ponta
 
@@ -60,6 +63,12 @@ O que está por vir aparece como roadmap honesto.
 Abra o workspace do projeto e pressione **Build** no painel inferior —
 compilação real com Gradle, logs ao vivo, Error Center e **Fix with Nexus
 Agent** (até 5 tentativas autônomas; destrutivos sempre recusados).
+
+Para **jogar**: workspace → **Run** (ou Run nos cards da Home). A primeira vez
+prepara a instância isolada com arquivos oficiais da Mojang (compartilhados
+entre projetos); depois é instantâneo. Requer Microsoft sign-in uma única vez
+(**Settings → Launcher** — device flow legítimo; registre um app gratuito no
+Azure e cole o client id).
 
 O template é parametrizado por versão: yarn mappings (legado 1.x) ou official
 Mojang mappings (novo esquema 26.x), Java release correto e Fabric API

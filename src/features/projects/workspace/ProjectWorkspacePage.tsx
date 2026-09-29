@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
-import { ChevronRight, Loader2, Save, X } from "lucide-react";
+import { ChevronRight, Loader2, Play, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { FileTree } from "./FileTree";
 import { SnapshotPanel } from "./SnapshotPanel";
 import { BuildDrawer } from "./BuildDrawer";
+import { LaunchDialog } from "./LaunchDialog";
 import type { ProjectFileEntry } from "@/types";
 
 interface OpenTab {
@@ -42,6 +43,7 @@ export function ProjectWorkspacePage() {
     [projects, projectId],
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [launchOpen, setLaunchOpen] = useState(false);
   const [files, setFiles] = useState<ProjectFileEntry[]>([]);
   const [filesLoading, setFilesLoading] = useState(true);
   const [tabs, setTabs] = useState<OpenTab[]>([]);
@@ -208,15 +210,21 @@ export function ProjectWorkspacePage() {
             {project.loader} · MC {project.minecraft_version}
           </Badge>
         </div>
-        <Button
-          size="sm"
-          variant={dirty ? "gradient" : "secondary"}
-          onClick={() => void saveActive()}
-          disabled={!activeTab || !dirty}
-        >
-          <Save className="h-3.5 w-3.5" />
-          {dirty ? "Save" : "Saved"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setLaunchOpen(true)} title="Run in Minecraft">
+            <Play className="h-3.5 w-3.5" />
+            Run
+          </Button>
+          <Button
+            size="sm"
+            variant={dirty ? "gradient" : "secondary"}
+            onClick={() => void saveActive()}
+            disabled={!activeTab || !dirty}
+          >
+            <Save className="h-3.5 w-3.5" />
+            {dirty ? "Save" : "Saved"}
+          </Button>
+        </div>
       </div>
 
       {/* Main grid */}
@@ -348,6 +356,9 @@ export function ProjectWorkspacePage() {
           />
         </div>
       </div>
+
+      {/* Run Minecraft with this mod */}
+      <LaunchDialog project={project} open={launchOpen} onOpenChange={setLaunchOpen} />
 
       {/* Build drawer — terminal, Error Center, Auto-Fix */}
       <BuildDrawer

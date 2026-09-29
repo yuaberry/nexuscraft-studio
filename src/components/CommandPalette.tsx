@@ -44,6 +44,7 @@ const NAV_TARGETS = [
   { to: "/settings/ai", label: "Settings · AI", icon: Plug, group: "Settings" },
   { to: "/settings/minecraft", label: "Settings · Minecraft", icon: SwatchBook, group: "Settings" },
   { to: "/settings/java", label: "Settings · Java", icon: TestTube2, group: "Settings" },
+  { to: "/settings/launcher", label: "Settings · Launcher", icon: Sparkles, group: "Settings" },
   { to: "/settings/storage", label: "Settings · Storage", icon: HardDrive, group: "Settings" },
   { to: "/settings/security", label: "Settings · Security", icon: ShieldCheck, group: "Settings" },
 ];

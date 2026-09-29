@@ -20,7 +20,8 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useProjectsStore } from "@/stores/projectsStore";
 import { useUiStore } from "@/stores/uiStore";
 import { detectEnvironment } from "@/services/environment/environmentService";
-import { Clock } from "lucide-react";
+import { Clock, Play } from "lucide-react";
+import { LaunchDialog } from "@/features/projects/workspace/LaunchDialog";
 import { formatRelativeTime } from "@/lib/utils";
 import type { ProjectRecord } from "@/types";
 import { secretsHas, AI_API_KEY_ID } from "@/services/secrets/secretsService";
@@ -38,6 +39,7 @@ export function HomePage() {
   const [env, setEnv] = useState<EnvironmentInfo | null>(null);
   const [envLoading, setEnvLoading] = useState(true);
   const setWizardOpen = useUiStore((s) => s.setCreateWizardOpen);
+  const [runProject, setRunProject] = useState<ProjectRecord | null>(null);
   const projects = useProjectsStore((s) => s.projects);
   const projectsLoaded = useProjectsStore((s) => s.loaded);
   const hydrateProjects = useProjectsStore((s) => s.hydrate);
@@ -178,7 +180,12 @@ export function HomePage() {
               ) : (
                 <div className="space-y-2">
                   {projects.slice(0, 4).map((project) => (
-                    <ProjectRow key={project.id} project={project} onOpen={() => navigate(`/projects/${project.id}`)} />
+                    <ProjectRow
+                      key={project.id}
+                      project={project}
+                      onOpen={() => navigate(`/projects/${project.id}`)}
+                      onRun={() => setRunProject(project)}
+                    />
                   ))}
                 </div>
               )}
@@ -221,6 +228,16 @@ export function HomePage() {
           </Card>
         </section>
 
+        {projects.length > 0 && (
+          <LaunchDialog
+            project={runProject ?? projects[0]}
+            open={runProject !== null}
+            onOpenChange={(open) => {
+              if (!open) setRunProject(null);
+            }}
+          />
+        )}
+
         {/* Storage shortcut */}
         {storageReady && (
           <section className="pb-6">
@@ -243,7 +260,15 @@ export function HomePage() {
   );
 }
 
-function ProjectRow({ project, onOpen }: { project: ProjectRecord; onOpen: () => void }) {
+function ProjectRow({
+  project,
+  onOpen,
+  onRun,
+}: {
+  project: ProjectRecord;
+  onOpen: () => void;
+  onRun: () => void;
+}) {
   return (
     <button
       onClick={onOpen}
@@ -279,6 +304,16 @@ function ProjectRow({ project, onOpen }: { project: ProjectRecord; onOpen: () =>
         <span className="mt-1 text-[10px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
           Open →
         </span>
+        <button
+          className="mt-0.5 rounded-md px-1.5 py-0.5 text-[9px] text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+          onClick={(event) => {
+            event.stopPropagation();
+            onRun();
+          }}
+          title="Run in Minecraft"
+        >
+          <Play className="inline h-2.5 w-2.5" /> Run
+        </button>
       </div>
     </button>
   );

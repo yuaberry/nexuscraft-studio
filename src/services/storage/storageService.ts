@@ -16,3 +16,8 @@ export async function getAppPaths(): Promise<AppPaths> {
 export async function openInFileManager(path: string): Promise<void> {
   await invoke("open_in_file_manager", { path });
 }
+
+/** Opens a Microsoft sign-in page in the system browser (Rust-guarded). */
+export async function openAuthUrl(url: string): Promise<void> {
+  await invoke("open_auth_url", { url });
+}

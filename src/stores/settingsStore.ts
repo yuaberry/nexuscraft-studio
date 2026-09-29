@@ -32,6 +32,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   storage: {
     basePath: "",
   },
+  launcher: {
+    clientId: "",
+    ramMb: 4096,
+  },
 };
 
 function mergeSection<T>(base: T, loaded: unknown): T {
@@ -65,6 +69,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
         minecraft: mergeSection(DEFAULT_SETTINGS.minecraft, raw.minecraft),
         java: mergeSection(DEFAULT_SETTINGS.java, raw.java),
         storage: mergeSection(DEFAULT_SETTINGS.storage, raw.storage),
+        launcher: mergeSection(DEFAULT_SETTINGS.launcher, raw.launcher),
       };
       set({ settings, loaded: true, loadError: null });
     } catch (error) {

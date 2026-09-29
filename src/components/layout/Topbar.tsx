@@ -19,6 +19,7 @@ const ROUTE_LABELS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /^\/settings\/ai/, label: "Settings / AI" },
   { pattern: /^\/settings\/minecraft/, label: "Settings / Minecraft" },
   { pattern: /^\/settings\/java/, label: "Settings / Java" },
+  { pattern: /^\/settings\/launcher/, label: "Settings / Launcher" },
   { pattern: /^\/settings\/storage/, label: "Settings / Storage" },
   { pattern: /^\/settings\/security/, label: "Settings / Security" },
   { pattern: /^\/settings\/advanced/, label: "Settings / Advanced" },
