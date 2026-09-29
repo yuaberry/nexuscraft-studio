@@ -54,6 +54,18 @@
         },
         {
           "url": "https://api.papermc.io/*"
+        },
+        {
+          "url": "https://login.microsoftonline.com/*"
+        },
+        {
+          "url": "https://user.auth.xboxlive.com/*"
+        },
+        {
+          "url": "https://xsts.auth.xboxlive.com/*"
+        },
+        {
+          "url": "https://api.minecraftservices.com/*"
         }
       ]
     }

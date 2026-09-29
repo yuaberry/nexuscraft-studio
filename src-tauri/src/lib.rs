@@ -41,6 +41,7 @@ pub fn run() {
             commands::storage::ensure_storage_dirs,
             commands::storage::get_app_paths,
             commands::storage::open_in_file_manager,
+            commands::storage::open_auth_url,
             commands::secrets::secrets_set,
             commands::secrets::secrets_get,
             commands::secrets::secrets_has,
@@ -65,6 +66,10 @@ pub fn run() {
             commands::git::project_git_diff,
             commands::process::start_build,
             commands::process::stop_build,
+            commands::process::stop_process,
+            commands::launcher::launcher_prepare,
+            commands::launcher::launcher_copy_mod_jar,
+            commands::launcher::launcher_launch,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

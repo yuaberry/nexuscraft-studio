@@ -169,3 +169,35 @@ pub fn open_in_file_manager(path: String) -> Result<(), String> {
         Err(e) => Err(format!("Could not launch file manager: {e}")),
     }
 }
+
+/// Opens a Microsoft authentication page in the system browser.
+/// Hard-restricted to Microsoft sign-in hosts — never arbitrary URLs.
+#[tauri::command]
+pub fn open_auth_url(url: String) -> Result<(), String> {
+    let trimmed = url.trim();
+    let allowed = trimmed.starts_with("https://www.microsoft.com/")
+        || trimmed.starts_with("https://login.microsoftonline.com/")
+        || trimmed.starts_with("https://login.live.com/");
+    if !allowed {
+        return Err("Only Microsoft sign-in pages can be opened".to_string());
+    }
+
+    let program = if cfg!(target_os = "linux") {
+        "xdg-open"
+    } else if cfg!(target_os = "macos") {
+        "open"
+    } else {
+        "explorer"
+    };
+
+    let status = std::process::Command::new(program)
+        .arg(trimmed)
+        .status()
+        .map_err(|e| format!("Could not open browser: {e}"))?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err("Browser failed to open".to_string())
+    }
+}

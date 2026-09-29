@@ -39,6 +39,121 @@ pub struct BuildExitEvent {
     pub success: bool,
 }
 
+/// Spawns a monitored process: stdout/stderr stream as `<prefix>:log`
+/// events, termination emits `<prefix>:exit`. One process per registry key.
+pub fn spawn_monitored(
+    app: AppHandle,
+    key: &str,
+    mut command: Command,
+    prefix: &str,
+) -> Result<String, String> {
+    let prefix = prefix.to_string();
+    let key = key.to_string();
+    {
+        let reg = registry().lock().unwrap();
+        if reg.contains_key(&key) {
+            return Err(format!("A process is already running for \"{key}\""));
+        }
+    }
+
+    command.stdout(Stdio::piped()).stderr(Stdio::piped());
+
+    let mut child = command.spawn().map_err(|e| format!("Failed to spawn: {e}"))?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| "Process opened without stdout".to_string())?;
+    let stderr = child
+        .stderr
+        .take()
+        .ok_or_else(|| "Process opened without stderr".to_string())?;
+
+    registry().lock().unwrap().insert(key.clone(), child);
+
+    let app_out = app.clone();
+    let key_out = key.clone();
+    let prefix_out = prefix.clone();
+    std::thread::spawn(move || {
+        for line in BufReader::new(stdout).lines().map_while(Result::ok) {
+            let _ = app_out.emit(
+                &format!("{prefix_out}:log"),
+                BuildLogEvent {
+                    project: key_out.clone(),
+                    stream: "stdout".into(),
+                    line,
+                },
+            );
+        }
+    });
+
+    let app_err = app.clone();
+    let key_err = key.clone();
+    let prefix_err = prefix.clone();
+    std::thread::spawn(move || {
+        for line in BufReader::new(stderr).lines().map_while(Result::ok) {
+            let _ = app_err.emit(
+                &format!("{prefix_err}:log"),
+                BuildLogEvent {
+                    project: key_err.clone(),
+                    stream: "stderr".into(),
+                    line,
+                },
+            );
+        }
+    });
+
+    let app_wait = app;
+    let key_wait = key.clone();
+    let prefix_wait = prefix;
+    std::thread::spawn(move || loop {
+        std::thread::sleep(Duration::from_millis(250));
+
+        let finished = {
+            let mut reg = registry().lock().unwrap();
+            match reg.get_mut(&key_wait) {
+                None => return,
+                Some(child) => match child.try_wait() {
+                    Ok(Some(status)) => {
+                        reg.remove(&key_wait);
+                        Some(status)
+                    }
+                    Ok(None) => None,
+                    Err(_) => {
+                        reg.remove(&key_wait);
+                        None
+                    }
+                },
+            }
+        };
+
+        if let Some(status) = finished {
+            let _ = app_wait.emit(
+                &format!("{prefix_wait}:exit"),
+                BuildExitEvent {
+                    project: key_wait.clone(),
+                    code: status.code(),
+                    success: status.success(),
+                },
+            );
+            return;
+        }
+    });
+
+    Ok(key)
+}
+
+/// Kills a process by registry key (used by builds and game instances).
+pub fn stop_by_key(key: &str) -> Result<(), String> {
+    let mut reg = registry().lock().unwrap();
+    match reg.get_mut(key) {
+        Some(child) => {
+            let _ = child.kill();
+            Ok(())
+        }
+        None => Err(format!("No running process for \"{key}\"")),
+    }
+}
+
 /// Starts a gradle wrapper task for a project. Returns the run id
 /// (= project rel path). One concurrent build per project.
 #[tauri::command]
@@ -56,13 +171,6 @@ pub fn start_build(
     let project_dir = fs::validated_path(&base_path, &project_rel, false)?;
     if !project_dir.is_dir() {
         return Err("Project directory not found".to_string());
-    }
-
-    {
-        let reg = registry().lock().unwrap();
-        if reg.contains_key(&project_rel) {
-            return Err("A build is already running for this project".to_string());
-        }
     }
 
     let wrapper_name = if cfg!(windows) { "gradlew.bat" } else { "gradlew" };
@@ -88,9 +196,7 @@ pub fn start_build(
         .arg(&task)
         .arg("--console=plain")
         .current_dir(&project_dir)
-        .env("GRADLE_USER_HOME", &gradle_home)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+        .env("GRADLE_USER_HOME", &gradle_home);
 
     // Optional custom Java (Settings → Java). Derive JAVA_HOME from a
     // "<...>/bin/java" path; pass through as-is otherwise.
@@ -107,105 +213,17 @@ pub fn start_build(
         }
     }
 
-    let mut child = command
-        .spawn()
-        .map_err(|e| format!("Failed to launch gradlew: {e} (is Java installed?)"))?;
-
-    let stdout = child
-        .stdout
-        .take()
-        .ok_or_else(|| "Gradle opened without stdout".to_string())?;
-    let stderr = child
-        .stderr
-        .take()
-        .ok_or_else(|| "Gradle opened without stderr".to_string())?;
-
-    registry()
-        .lock()
-        .unwrap()
-        .insert(project_rel.clone(), child);
-
-    // Reader threads: pipe lines to the frontend as they arrive
-    let app_out = app.clone();
-    let proj_out = project_rel.clone();
-    std::thread::spawn(move || {
-        for line in BufReader::new(stdout).lines().map_while(Result::ok) {
-            let _ = app_out.emit(
-                "build:log",
-                BuildLogEvent {
-                    project: proj_out.clone(),
-                    stream: "stdout".into(),
-                    line,
-                },
-            );
-        }
-    });
-
-    let app_err = app.clone();
-    let proj_err = project_rel.clone();
-    std::thread::spawn(move || {
-        for line in BufReader::new(stderr).lines().map_while(Result::ok) {
-            let _ = app_err.emit(
-                "build:log",
-                BuildLogEvent {
-                    project: proj_err.clone(),
-                    stream: "stderr".into(),
-                    line,
-                },
-            );
-        }
-    });
-
-    // Watcher: polls the child without holding the lock, emits the exit event
-    let app_wait = app;
-    let proj_wait = project_rel.clone();
-    std::thread::spawn(move || loop {
-        std::thread::sleep(Duration::from_millis(250));
-
-        let finished = {
-            let mut reg = registry().lock().unwrap();
-            match reg.get_mut(&proj_wait) {
-                None => return, // stop_build already cleaned up or app shutdown
-                Some(child) => match child.try_wait() {
-                    Ok(Some(status)) => {
-                        reg.remove(&proj_wait);
-                        Some(status)
-                    }
-                    Ok(None) => None,
-                    Err(_) => {
-                        reg.remove(&proj_wait);
-                        None
-                    }
-                },
-            }
-        };
-
-        if let Some(status) = finished {
-            let _ = app_wait.emit(
-                "build:exit",
-                BuildExitEvent {
-                    project: proj_wait.clone(),
-                    code: status.code(),
-                    success: status.success(),
-                },
-            );
-            return;
-        }
-    });
-
-    Ok(project_rel)
+    spawn_monitored(app, &project_rel, command, "build")
 }
 
 /// Stops a running build (kill — the watcher thread emits the exit event).
 #[tauri::command]
 pub fn stop_build(project_rel: String) -> Result<(), String> {
-    let mut reg = registry().lock().unwrap();
-    match reg.get_mut(&project_rel) {
-        Some(child) => {
-            // Killing an already-dead child returns Err — harmless here
-            let _ = child.kill();
-            Ok(())
-        }
-        None => Err("No running build for this project".to_string()),
-    }
+    stop_by_key(&project_rel)
+}
+
+/// Stops any monitored process by key (e.g. "launch/<slug>").
+#[tauri::command]
+pub fn stop_process(key: String) -> Result<(), String> {
+    stop_by_key(&key)
 }
