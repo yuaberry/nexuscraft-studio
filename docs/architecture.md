@@ -67,10 +67,10 @@ Wizard, start/stop, console, backups. Prison/SkyBlock/economia ficam em template
 | Fase | Entrega | Critério de aceitação |
 |---|---|---|
 | 0 ✅ | Shell + SQLite + Settings + Security + Palette | App abre; key OpenRouter salva no keyring; 18 tabelas migradas |
-| 1 | Projects core | Criar projeto de template Fabric 1.20.1; Monaco edita; snapshot/rollback |
-| 2 | AI Provider streaming + AI Creator | Chat com contexto do projeto; spec gerada e persistida |
-| 3 | Nexus Agent | "Crie a espada Voidcutter" → arquivos reais, auditados |
-| 4 | Build System | `./gradlew build` com logs ao vivo; Auto-Fix limitado |
+| 1 ✅ | Projects core | Projeto Fabric criado do template; Monaco edita; snapshot/rollback |
+| 2 ✅ | AI streaming + AI Creator + Version Catalog | Chat com contexto; spec proposta/salva; catálogo auto-atualizado (26.x) |
+| 3 ✅ | Nexus Agent | 12 tools com sandbox; auditoria; "Voidcutter" → arquivos reais |
+| 4 ✅ | Build System | `./gradlew build` ao vivo; Error Center; Auto-Fix ≤5; **E2E: jar compilado** |
 | 5 | Instâncias + Launcher | RUN abre Minecraft 1.20.1 com o mod do projeto |
 | 6 | Server Studio | Servidor Paper local: start, console real, backup/restore |
 | 7 | GitHub + E2E | Dark Kingdom: Create → Build → Run; push para GitHub |

@@ -183,8 +183,9 @@ export function SnapshotPanel({ basePath, projectRel, onAfterRestore }: Snapshot
           <DialogHeader>
             <DialogTitle>Restore snapshot {confirmRestore?.label}?</DialogTitle>
             <DialogDescription>
-              Files return to the snapshot state. Current changes are committed
-              into a restore point first — nothing is lost from history.
+              Tracked files return to the snapshot state and a restore commit is
+              created first — nothing is lost from history. Files created after
+              this snapshot stay in place (visible in the Changes tab).
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

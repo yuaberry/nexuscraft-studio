@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ProjectRecord } from "@/types";
 import {
+  persistBuildLogEntry,
   preflightBuild,
   runBuild,
   stopBuildCommand,
@@ -109,6 +110,7 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
         last_build_status: result.status,
         last_build_at: new Date().toISOString(),
       });
+      void persistBuildLogEntry(project, result);
       if (result.status === "success") {
         toast.success("Build completed", {
           description: "The compiled mod jar is in build/libs/.",
@@ -154,20 +156,22 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
       setAutoFix({ ...state });
     };
 
+    // Local working set — never mutate the memoized parser output
+    let currentErrors = errors.map((e) => ({ ...e }));
+
     try {
       const context = await loadProjectContext(project);
 
       for (let attempt = 1; attempt <= AUTO_FIX_MAX_ATTEMPTS; attempt++) {
         state.attempt = attempt;
         setAutoFix({ ...state });
-        push(`Attempt ${attempt}/${AUTO_FIX_MAX_ATTEMPTS} — agent is fixing ${errors.length} error(s)…`);
+        push(`Attempt ${attempt}/${AUTO_FIX_MAX_ATTEMPTS} — agent is fixing ${currentErrors.length} error(s)…`);
 
         const session = await createSession(
           project.id,
           `auto-fix attempt ${attempt}`,
         );
 
-        const agentEvents: string[] = [];
         await runAgent({
           settings: aiSettings,
           project,
@@ -175,11 +179,10 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
           basePath,
           sessionId: session.id,
           history: [],
-          userText: errorsToPrompt(errors, attempt),
+          userText: errorsToPrompt(currentErrors, attempt),
           shouldAbort: () => abortRef.current,
           onEvent: (event: AgentEvent) => {
             if (event.type === "tool_start") {
-              agentEvents.push(`${event.tool} ${event.summary}`);
               push(`  → ${event.tool} ${event.summary}`);
             } else if (event.type === "tool_result" && !event.ok) {
               push(`  ✗ ${event.tool}: ${event.output.slice(0, 120)}`);
@@ -214,13 +217,14 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
 
         const nextErrors = parseBuildErrors(rebuilt.logs);
         push(`Build still failing (${nextErrors.length} error(s)).`);
+        void persistBuildLogEntry(project, rebuilt);
         if (attempt === AUTO_FIX_MAX_ATTEMPTS) {
           push("Attempt budget exhausted — review the errors and continue manually.");
           toast.warning("Auto-Fix budget exhausted", {
             description: "The agent could not fully repair the build. Review the Error Center.",
           });
         } else {
-          errors.splice(0, errors.length, ...nextErrors);
+          currentErrors = nextErrors;
         }
       }
     } catch (error) {

@@ -112,9 +112,22 @@ export async function runBuild(
   let unlistenFns: UnlistenFn[] = [];
 
   try {
-    await startBuildCommand(basePath, projectRel, task, customJavaPath);
+    // Register listeners BEFORE spawning so early log lines are never lost
+    await new Promise<void>((resolveTop) => {
+      let started = false;
+      const startOnce = () => {
+        if (started) return;
+        started = true;
+        void startBuildCommand(basePath, projectRel, task, customJavaPath)
+          .catch((error) => {
+            run.status = "failed";
+            run.endedAt = Date.now();
+            run.logs.push({ stream: "stderr", line: String(error) });
+            onLine(run);
+            resolveTop();
+          });
+      };
 
-    await new Promise<void>((resolve) => {
       void listen<{ project: string; stream: string; line: string }>("build:log", (event) => {
         const payload = event.payload;
         if (payload.project !== projectRel) return;
@@ -122,6 +135,7 @@ export async function runBuild(
         onLine(run);
       }).then((fn) => {
         unlistenFns.push(fn);
+        startOnce();
       });
 
       void listen<{ project: string; code: number | null; success: boolean }>(
@@ -133,10 +147,11 @@ export async function runBuild(
           run.exitCode = payload.code;
           run.status = payload.success ? "success" : "failed";
           onLine(run);
-          resolve();
+          resolveTop();
         },
       ).then((fn) => {
         unlistenFns.push(fn);
+        startOnce();
       });
     });
   } finally {
@@ -148,4 +163,33 @@ export async function runBuild(
   void updateProjectBuildStatus(project.id, run.status).catch(() => {});
 
   return run;
+}
+
+/**
+ * Persists a compact build outcome to the `logs` table (AD-8).
+ * Full transcripts stay in the drawer; the DB keeps the searchable record.
+ */
+export async function persistBuildLogEntry(
+  project: ProjectRecord,
+  run: BuildRun,
+): Promise<void> {
+  try {
+    const { getDb } = await import("@/services/db/client");
+    const db = await getDb();
+    const errorLines = run.logs
+      .filter((l) => l.line.includes("error") || l.stream === "stderr")
+      .slice(-8)
+      .map((l) => l.line.slice(0, 200))
+      .join(" | ");
+    const message =
+      run.status === "success"
+        ? `Build success (${run.task}) — ${run.logs.length} lines`
+        : `Build failed (exit ${run.exitCode ?? "?"}) — ${run.logs.length} lines${errorLines ? ` — tail: ${errorLines}` : ""}`;
+    await db.execute(
+      `INSERT INTO logs (level, source, message) VALUES ($1, $2, $3)`,
+      [run.status === "success" ? "info" : "error", `build:${project.slug}`, message],
+    );
+  } catch (error) {
+    console.warn("Failed to persist build log entry:", error);
+  }
 }
