@@ -13,7 +13,7 @@ O que está por vir aparece como roadmap honesto.
 
 ---
 
-## Status atual — Fases 0, 1, 2 e 3 (concluídas)
+## Status atual — Fases 0, 1, 2, 3 e 4 (concluídas)
 
 | Sistema | Estado |
 |---|---|
@@ -38,10 +38,13 @@ O que está por vir aparece como roadmap honesto.
 | **Fase 3:** Nexus Agent — 12 tools com sandbox, 3 camadas de policy, auditoria em `ai_tool_calls` | ✅ |
 | **Fase 3:** Orquestrador com orçamento (8 steps / 30 writes) + snapshot automático pré-escrita | ✅ |
 | **Fase 3:** Timeline de execução na UI, confirmação para destrutivos, painel Changes (git diff) | ✅ |
+| **Fase 4:** Build real — `./gradlew build` com terminal ao vivo via eventos Rust | ✅ |
+| **Fase 4:** Error Center categorizado + Auto-Fix com o agent (máx. 5 tentativas, destrutivos recusados) | ✅ |
+| **Fase 4:** E2E provado — template compilou de verdade: `e2e-dark-kingdom-0.1.0.jar` (Gradle 8.8 + Loom) | ✅ |
+| **Fase 4:** Cache Gradle compartilhado pré-aquecido (476 MB) | ✅ |
 
 ## Roadmap
 
-- **Fase 4** — Build System: Gradle, Error Center, Auto-Fix
 - **Fase 5** — Instâncias isoladas + Launcher (Run Minecraft com o mod)
 - **Fase 6** — Server Studio: criar/gerir servidores locais, console, backups
 - **Fase 7** — GitHub + projeto exemplo "Dark Kingdom" ponta a ponta
@@ -53,6 +56,10 @@ O que está por vir aparece como roadmap honesto.
 3. Escolha a **versão do Minecraft** no catálogo ao vivo (sync automático: Mojang oficial + Fabric/Forge/NeoForge/Paper) e digite um nome → Create
 4. O workspace abre com explorer, editor Monaco e painel de snapshots
 5. **AI Creator** — no **Agent mode**, peça: *"add a Voidcutter sword: item, model, lang and recipe"* — a IA lê o projeto, edita os arquivos via tools sandboxadas (com auditoria e snapshot automático) e você revisa o diff na aba Changes
+
+Abra o workspace do projeto e pressione **Build** no painel inferior —
+compilação real com Gradle, logs ao vivo, Error Center e **Fix with Nexus
+Agent** (até 5 tentativas autônomas; destrutivos sempre recusados).
 
 O template é parametrizado por versão: yarn mappings (legado 1.x) ou official
 Mojang mappings (novo esquema 26.x), Java release correto e Fabric API
