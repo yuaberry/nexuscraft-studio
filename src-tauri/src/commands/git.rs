@@ -231,3 +231,16 @@ pub fn project_git_status(base_path: String, project_rel: String) -> Result<Stri
     let output = git(&project, &["status", "--porcelain"])?;
     Ok(stdout_trim(&output))
 }
+
+/// Working tree + staged diff against HEAD (agent tool + Changes panel).
+#[tauri::command]
+pub fn project_git_diff(base_path: String, project_rel: String) -> Result<String, String> {
+    let project = super::fs::validated_path(&base_path, &project_rel, false)?;
+    let output = git(&project, &["diff", "HEAD"])?;
+    let diff = stdout_trim(&output);
+    Ok(if diff.is_empty() {
+        "No changes against the last snapshot.".to_string()
+    } else {
+        diff
+    })
+}

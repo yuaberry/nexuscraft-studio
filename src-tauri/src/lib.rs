@@ -56,10 +56,13 @@ pub fn run() {
             commands::fs::rename_project_entry,
             commands::fs::read_project_file_base64,
             commands::fs::import_project_file,
+            commands::fs::edit_project_file,
+            commands::fs::search_project,
             commands::git::project_create_snapshot,
             commands::git::project_list_snapshots,
             commands::git::project_snapshot_restore,
             commands::git::project_git_status,
+            commands::git::project_git_diff,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

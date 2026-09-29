@@ -379,3 +379,243 @@ mod tests {
         let _ = fs::remove_dir_all(&base);
     }
 }
+
+// ---------------------------------------------------------------------------
+// Nexus Agent tools (Phase 3) — surgical edits and project-wide search.
+// ---------------------------------------------------------------------------
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct EditResult {
+    pub occurrences: u32,
+    pub new_length: usize,
+}
+
+/// Find & replace inside a project file. Refuses empty needles and missing
+/// occurrences with clear errors — the agent relies on those messages to
+/// self-correct.
+#[tauri::command]
+pub fn edit_project_file(
+    base_path: String,
+    rel: String,
+    find: String,
+    replace: String,
+    replace_all: bool,
+) -> Result<EditResult, String> {
+    if find.is_empty() {
+        return Err("edit_file: \"find\" cannot be empty".to_string());
+    }
+    if find == replace {
+        return Err("edit_file: \"find\" and \"replace\" are identical".to_string());
+    }
+
+    let target = validated_path(&base_path, &rel, false)?;
+    if !target.is_file() {
+        return Err(format!("edit_file: \"{rel}\" is not a file"));
+    }
+
+    let meta = fs::metadata(&target).map_err(|e| format!("Stat failed: {e}"))?;
+    if meta.len() > MAX_TEXT_FILE_BYTES {
+        return Err(format!("edit_file: \"{rel}\" is too large to edit in place"));
+    }
+
+    let content = fs::read_to_string(&target)
+        .map_err(|e| format!("edit_file: read failed: {e}"))?;
+
+    let occurrences = content.matches(&find).count() as u32;
+    if occurrences == 0 {
+        return Err(format!(
+            "edit_file: text not found in \"{rel}\" — read the file again and match it exactly"
+        ));
+    }
+
+    let updated = if replace_all {
+        content.replace(&find, &replace)
+    } else {
+        content.replacen(&find, &replace, 1)
+    };
+
+    fs::write(&target, &updated).map_err(|e| format!("edit_file: write failed: {e}"))?;
+
+    Ok(EditResult {
+        occurrences: if replace_all { occurrences } else { 1 },
+        new_length: updated.len(),
+    })
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchMatch {
+    pub path: String,
+    pub line_number: u32,
+    pub line_text: String,
+}
+
+const SKIP_DIRS_SEARCH: [&str; 4] = [".git", "build", ".gradle", "run"];
+const MAX_SEARCH_FILE_BYTES: u64 = 1024 * 1024;
+
+fn walk_search(
+    dir: &Path,
+    prefix: &str,
+    needle: &str,
+    case_sensitive: bool,
+    budget: &mut u32,
+    out: &mut Vec<SearchMatch>,
+) -> Result<(), String> {
+    if *budget == 0 {
+        return Ok(());
+    }
+    let entries = fs::read_dir(dir)
+        .map_err(|e| format!("Failed to read {}: {e}", dir.display()))?;
+
+    for entry in entries {
+        if *budget == 0 {
+            return Ok(());
+        }
+        let entry = entry.map_err(|e| format!("Dir entry error: {e}"))?;
+        let name = entry.file_name().to_string_lossy().to_string();
+        let rel = if prefix.is_empty() { name.clone() } else { format!("{prefix}/{name}") };
+        let path = entry.path();
+
+        let meta = match entry.metadata() {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        if meta.is_dir() {
+            if SKIP_DIRS_SEARCH.contains(&name.as_str()) && prefix == "" {
+                continue;
+            }
+            walk_search(&path, &rel, needle, case_sensitive, budget, out)?;
+        } else if meta.len() <= MAX_SEARCH_FILE_BYTES {
+            if let Ok(content) = fs::read_to_string(&path) {
+                for (index, line) in content.lines().enumerate() {
+                    let hit = if case_sensitive {
+                        line.contains(needle)
+                    } else {
+                        line.to_lowercase().contains(&needle.to_lowercase())
+                    };
+                    if hit {
+                        out.push(SearchMatch {
+                            path: rel.clone(),
+                            line_number: index as u32 + 1,
+                            line_text: line.trim().chars().take(240).collect(),
+                        });
+                        *budget = budget.saturating_sub(1);
+                        if *budget == 0 {
+                            return Ok(());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Case-insensitive text search across the project (agent tool).
+#[tauri::command]
+pub fn search_project(
+    base_path: String,
+    project_rel: String,
+    query: String,
+    case_sensitive: Option<bool>,
+    max_results: Option<u32>,
+) -> Result<Vec<SearchMatch>, String> {
+    if query.trim().is_empty() {
+        return Err("search_project: query cannot be empty".to_string());
+    }
+    let project = validated_path(&base_path, &project_rel, false)?;
+    if !project.is_dir() {
+        return Err("Project directory not found".to_string());
+    }
+
+    let mut out = Vec::new();
+    let mut budget = max_results.unwrap_or(50).min(200);
+    walk_search(
+        &project,
+        "",
+        query.trim(),
+        case_sensitive.unwrap_or(false),
+        &mut budget,
+        &mut out,
+    )?;
+    Ok(out)
+}
+
+#[cfg(test)]
+mod agent_tool_tests {
+    use super::*;
+
+    fn base() -> std::path::PathBuf {
+        let base = std::env::temp_dir().join(format!("nexuscraft-agent-{}", std::process::id()));
+        fs::create_dir_all(&base).unwrap();
+        base
+    }
+
+    #[test]
+    fn edit_file_replaces_once_and_all() {
+        let base = base();
+        fs::write(base.join("file.txt"), "alpha beta gamma beta").unwrap();
+
+        let rel = "file.txt";
+        let r = edit_project_file(
+            base.to_string_lossy().to_string(),
+            rel.into(),
+            "beta".into(),
+            "omega".into(),
+            false,
+        )
+        .unwrap();
+        assert_eq!(r.occurrences, 1);
+        assert_eq!(fs::read_to_string(base.join("file.txt")).unwrap(), "alpha omega gamma beta");
+
+        let r = edit_project_file(
+            base.to_string_lossy().to_string(),
+            rel.into(),
+            "beta".into(),
+            "omega".into(),
+            true,
+        )
+        .unwrap();
+        assert_eq!(r.occurrences, 1); // only one beta remains
+        assert_eq!(fs::read_to_string(base.join("file.txt")).unwrap(), "alpha omega gamma omega");
+
+        let err = edit_project_file(
+            base.to_string_lossy().to_string(),
+            rel.into(),
+            "nonexistent".into(),
+            "x".into(),
+            false,
+        );
+        assert!(err.is_err());
+
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn search_finds_matches_and_skips_artifacts() {
+        let base = base();
+        let src = base.join("src");
+        fs::create_dir_all(&src).unwrap();
+        fs::write(src.join("Main.java"), "class Main {\n  // VOIDCUTTER here\n}\n").unwrap();
+        fs::write(src.join("Other.java"), "// voidcutter lowercase\n").unwrap();
+        let git_dir = base.join(".git");
+        fs::create_dir_all(&git_dir).unwrap();
+        fs::write(git_dir.join("config"), "voidcutter should not appear").unwrap();
+
+        let matches = search_project(
+            base.to_string_lossy().to_string(),
+            ".".into(),
+            "voidcutter".into(),
+            Some(false),
+            Some(50),
+        )
+        .unwrap();
+
+        assert_eq!(matches.len(), 2, "case-insensitive, .git skipped");
+        assert!(matches.iter().all(|m| m.path.starts_with("src/")));
+
+        let _ = fs::remove_dir_all(&base);
+    }
+}
