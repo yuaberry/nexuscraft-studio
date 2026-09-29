@@ -18,8 +18,13 @@ use super::fs;
 /// Gradle tasks the app is allowed to run. Anything else is refused.
 const BUILD_TASKS: [&str; 3] = ["build", "clean", "jar"];
 
-fn registry() -> &'static Mutex<HashMap<String, Child>> {
-    static REGISTRY: OnceLock<Mutex<HashMap<String, Child>>> = OnceLock::new();
+pub struct ProcessHandle {
+    pub child: Child,
+    pub stdin: Option<std::process::ChildStdin>,
+}
+
+fn registry() -> &'static Mutex<HashMap<String, ProcessHandle>> {
+    static REGISTRY: OnceLock<Mutex<HashMap<String, ProcessHandle>>> = OnceLock::new();
     REGISTRY.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
@@ -41,11 +46,14 @@ pub struct BuildExitEvent {
 
 /// Spawns a monitored process: stdout/stderr stream as `<prefix>:log`
 /// events, termination emits `<prefix>:exit`. One process per registry key.
+/// With `with_stdin`, the process keeps a writable stdin for console
+/// commands (e.g. Minecraft server `stop`).
 pub fn spawn_monitored(
     app: AppHandle,
     key: &str,
     mut command: Command,
     prefix: &str,
+    with_stdin: bool,
 ) -> Result<String, String> {
     let prefix = prefix.to_string();
     let key = key.to_string();
@@ -56,6 +64,9 @@ pub fn spawn_monitored(
         }
     }
 
+    if with_stdin {
+        command.stdin(Stdio::piped());
+    }
     command.stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let mut child = command.spawn().map_err(|e| format!("Failed to spawn: {e}"))?;
@@ -67,8 +78,12 @@ pub fn spawn_monitored(
         .stderr
         .take()
         .ok_or_else(|| "Process opened without stderr".to_string())?;
+    let stdin = child.stdin.take();
 
-    registry().lock().unwrap().insert(key.clone(), child);
+    registry().lock().unwrap().insert(
+        key.clone(),
+        ProcessHandle { child, stdin },
+    );
 
     let app_out = app.clone();
     let key_out = key.clone();
@@ -112,7 +127,7 @@ pub fn spawn_monitored(
             let mut reg = registry().lock().unwrap();
             match reg.get_mut(&key_wait) {
                 None => return,
-                Some(child) => match child.try_wait() {
+                Some(handle) => match handle.child.try_wait() {
                     Ok(Some(status)) => {
                         reg.remove(&key_wait);
                         Some(status)
@@ -146,12 +161,32 @@ pub fn spawn_monitored(
 pub fn stop_by_key(key: &str) -> Result<(), String> {
     let mut reg = registry().lock().unwrap();
     match reg.get_mut(key) {
-        Some(child) => {
-            let _ = child.kill();
+        Some(handle) => {
+            let _ = handle.child.kill();
             Ok(())
         }
         None => Err(format!("No running process for \"{key}\"")),
     }
+}
+
+/// Writes a line to a process's stdin (server console commands).
+pub fn send_line(key: &str, line: &str) -> Result<(), String> {
+    use std::io::Write as _;
+    let mut reg = registry().lock().unwrap();
+    let handle = reg
+        .get_mut(key)
+        .ok_or_else(|| format!("No running process for \"{key}\""))?;
+    let stdin = handle
+        .stdin
+        .as_mut()
+        .ok_or_else(|| "This process has no console (stdin closed)".to_string())?;
+    writeln!(stdin, "{line}").map_err(|e| format!("write failed: {e}"))?;
+    stdin.flush().map_err(|e| format!("flush failed: {e}"))
+}
+
+/// True while the key has a live registry entry.
+pub fn is_running(key: &str) -> bool {
+    registry().lock().unwrap().contains_key(key)
 }
 
 /// Starts a gradle wrapper task for a project. Returns the run id
@@ -213,7 +248,7 @@ pub fn start_build(
         }
     }
 
-    spawn_monitored(app, &project_rel, command, "build")
+    spawn_monitored(app, &project_rel, command, "build", false)
 }
 
 /// Stops a running build (kill — the watcher thread emits the exit event).

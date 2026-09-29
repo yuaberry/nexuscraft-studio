@@ -25,3 +25,4 @@ tauri-plugin-dialog = "2.8.0"
 tauri-plugin-http = "2.8.0"
 tauri-plugin-sql = { version = "2.5.0", features = ["sqlite"] }
 zip = "8.6.0"
+sha2 = "0.11.0"

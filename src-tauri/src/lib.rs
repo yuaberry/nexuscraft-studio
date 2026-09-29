@@ -70,6 +70,15 @@ pub fn run() {
             commands::launcher::launcher_prepare,
             commands::launcher::launcher_copy_mod_jar,
             commands::launcher::launcher_launch,
+            commands::servers::server_create,
+            commands::servers::server_start,
+            commands::servers::server_stop,
+            commands::servers::server_status,
+            commands::servers::server_send_command,
+            commands::servers::server_backup,
+            commands::servers::server_list_backups,
+            commands::servers::server_restore,
+            commands::servers::server_delete,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

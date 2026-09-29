@@ -5,6 +5,7 @@ pub mod launcher;
 pub mod process;
 pub mod projects;
 pub mod secrets;
+pub mod servers;
 pub mod storage;
 pub mod templates;
 pub mod templates_embed;

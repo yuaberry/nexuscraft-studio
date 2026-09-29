@@ -38,7 +38,7 @@ fn shared_client() -> &'static reqwest::blocking::Client {
     })
 }
 
-fn http_get_bytes(url: &str) -> Result<Vec<u8>, String> {
+pub(crate) fn http_get_bytes(url: &str) -> Result<Vec<u8>, String> {
     let response = shared_client()
         .get(url)
         .send()
@@ -100,16 +100,16 @@ fn fabric_profile_url(mc: &str, loader: &str) -> String {
 }
 
 #[derive(Deserialize)]
-struct Manifest {
+pub(crate) struct Manifest {
     #[serde(default)]
-    versions: Vec<ManifestEntry>,
+    pub(crate) versions: Vec<ManifestEntry>,
 }
 
 #[derive(Deserialize)]
-struct ManifestEntry {
-    id: String,
+pub(crate) struct ManifestEntry {
+    pub(crate) id: String,
     #[serde(default)]
-    url: String,
+    pub(crate) url: String,
 }
 
 #[derive(Deserialize)]
@@ -833,7 +833,7 @@ pub fn launcher_launch(
     command.current_dir(&inst);
 
     let key = format!("launch/{project_slug}");
-    process::spawn_monitored(app, &key, command, "launch")?;
+    process::spawn_monitored(app, &key, command, "launch", false)?;
     Ok(key)
 }
 

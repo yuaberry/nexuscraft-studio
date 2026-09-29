@@ -27,6 +27,15 @@ pub fn current_year() -> String {
 
 /// Civil date from days since epoch (Howard Hinnant's algorithm).
 fn days_to_civil(z: i64) -> (i64, u32, u32) {
+    civil_impl(z)
+}
+
+/// Public wrapper for other modules (server backup timestamps).
+pub(crate) fn civil_from_days(z: i64) -> (i64, u32, u32) {
+    civil_impl(z)
+}
+
+fn civil_impl(z: i64) -> (i64, u32, u32) {
     let z = z + 719_468;
     let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
     let doe = (z - era * 146_097) as u64;
