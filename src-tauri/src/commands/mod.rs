@@ -1,6 +1,7 @@
 pub mod environment;
 pub mod fs;
 pub mod git;
+pub mod process;
 pub mod projects;
 pub mod secrets;
 pub mod storage;

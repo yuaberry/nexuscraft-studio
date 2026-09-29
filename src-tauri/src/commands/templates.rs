@@ -113,10 +113,33 @@ pub fn write_template(
             let rendered = render_string(tokens, content);
             fs::write(&target, rendered)
                 .map_err(|e| format!("Failed to write {}: {e}", target.display()))?;
+
+            // The gradle wrapper must stay executable after template rendering
+            if rendered_path == "gradlew" {
+                make_executable(&target)?;
+            }
         }
         count += 1;
     }
     Ok(count)
+}
+
+/// Marks a file as executable (Unix). The template's gradlew is text — the
+/// exec bit must be restored after rendering.
+fn make_executable(path: &Path) -> Result<(), String> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mut perms = fs::metadata(path)
+            .map_err(|e| format!("stat failed for {}: {e}", path.display()))?
+            .permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(path, perms)
+            .map_err(|e| format!("chmod failed for {}: {e}", path.display()))?;
+    }
+    #[cfg(not(unix))]
+    let _ = path;
+    Ok(())
 }
 
 /// Joins a rendered template-relative path onto a destination root while
@@ -227,6 +250,14 @@ mod tests {
         // Wrapper jar copied verbatim (binary)
         let jar = dst.join("gradle/wrapper/gradle-wrapper.jar");
         assert!(jar.is_file());
+
+        // gradlew must remain executable (unix)
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = fs::metadata(dst.join("gradlew")).unwrap().permissions().mode();
+            assert!(mode & 0o111 != 0, "gradlew must be executable, got mode {mode:o}");
+        }
 
         // No token leftovers anywhere in the tree
         assert_no_tokens(&dst);

@@ -63,6 +63,8 @@ pub fn run() {
             commands::git::project_snapshot_restore,
             commands::git::project_git_status,
             commands::git::project_git_diff,
+            commands::process::start_build,
+            commands::process::stop_build,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

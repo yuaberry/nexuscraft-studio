@@ -547,15 +547,18 @@ pub fn search_project(
 mod agent_tool_tests {
     use super::*;
 
-    fn base() -> std::path::PathBuf {
-        let base = std::env::temp_dir().join(format!("nexuscraft-agent-{}", std::process::id()));
+    fn base(label: &str) -> std::path::PathBuf {
+        let base = std::env::temp_dir().join(format!(
+            "nexuscraft-agent-{}-{label}",
+            std::process::id()
+        ));
         fs::create_dir_all(&base).unwrap();
         base
     }
 
     #[test]
     fn edit_file_replaces_once_and_all() {
-        let base = base();
+        let base = base("edit");
         fs::write(base.join("file.txt"), "alpha beta gamma beta").unwrap();
 
         let rel = "file.txt";
@@ -595,7 +598,7 @@ mod agent_tool_tests {
 
     #[test]
     fn search_finds_matches_and_skips_artifacts() {
-        let base = base();
+        let base = base("search");
         let src = base.join("src");
         fs::create_dir_all(&src).unwrap();
         fs::write(src.join("Main.java"), "class Main {\n  // VOIDCUTTER here\n}\n").unwrap();

@@ -231,3 +231,83 @@ mod tests {
         let _ = std::fs::remove_dir_all(&base);
     }
 }
+
+#[cfg(test)]
+mod e2e_tests {
+    use super::*;
+    use std::process::Command;
+
+    /// Full end-to-end proof: creates a real project from the embedded
+    /// template and compiles it with the real Gradle wrapper.
+    /// This is the MVP acceptance criterion ("the project compiles").
+    #[test]
+    #[ignore = "e2e: downloads Gradle + Loom + deps (network; ~10 min on first run)"]
+    fn e2e_gradle_build_compiles_template() {
+        let home = std::env::var("HOME").expect("HOME is set");
+        let base = std::path::PathBuf::from(&home).join("NexusCraft");
+        std::fs::create_dir_all(&base).unwrap();
+        let base_str = base.to_string_lossy().to_string();
+
+        // Clean slate for the e2e project only
+        let slug = "e2e-dark-kingdom";
+        let _ = std::fs::remove_dir_all(base.join("projects").join(slug));
+
+        let payload = CreateProjectPayload {
+            storage_base: base_str.clone(),
+            slug: slug.to_string(),
+            name: "Dark Kingdom E2E".to_string(),
+            template: "fabric-1.20.1-mod".to_string(),
+            mod_id: "dark_kingdom".to_string(),
+            mod_id_class: "DarkKingdom".to_string(),
+            package: "com.nexuscraft.darkkingdom".to_string(),
+            description: "E2E acceptance build".to_string(),
+            license: "MIT".to_string(),
+            author: "NexusCraft E2E".to_string(),
+            minecraft_version: "1.20.1".to_string(),
+            java_release: 17,
+            yarn_mappings: "1.20.1+build.10".to_string(),
+            loader_version: "0.16.9".to_string(),
+            loader_min: ">=0.16.0".to_string(),
+            fabric_api_version: "0.92.12+1.20.1".to_string(),
+            mc_depends: "~1.20.1".to_string(),
+            mappings_line: "mappings \"net.fabricmc:yarn:1.20.1+build.10:v2\"".to_string(),
+        };
+
+        let result = create_project(payload).expect("project creation must succeed");
+        let project_dir = std::path::PathBuf::from(&result.project_path);
+
+        // Warm the app's real cache so the first user build is fast
+        let gradle_home = base.join(".gradle-cache");
+        std::fs::create_dir_all(&gradle_home).unwrap();
+
+        let gradlew = project_dir.join("gradlew");
+        let output = Command::new(&gradlew)
+            .arg("build")
+            .arg("--console=plain")
+            .current_dir(&project_dir)
+            .env("GRADLE_USER_HOME", &gradle_home)
+            .output()
+            .expect("failed to run gradlew");
+
+        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        if !output.status.success() {
+            panic!(
+                "GRADLE BUILD FAILED (exit {:?})\n--- stdout tail ---\n{}\n--- stderr tail ---\n{}",
+                output.status.code(),
+                stdout.chars().rev().collect::<String>().chars().take(4000).collect::<String>().chars().rev().collect::<String>(),
+                stderr
+            );
+        }
+
+        // The compiled mod jar must exist
+        let libs = project_dir.join("build/libs");
+        let jars: Vec<_> = std::fs::read_dir(&libs)
+            .expect("build/libs must exist after build")
+            .map(|e| e.unwrap().file_name().to_string_lossy().to_string())
+            .filter(|name| name.ends_with(".jar") && !name.contains("sources"))
+            .collect();
+        assert!(!jars.is_empty(), "compiled jar missing in build/libs: {jars:?}");
+        eprintln!("E2E OK — jar: {jars:?}");
+    }
+}
