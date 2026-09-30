@@ -89,6 +89,26 @@ pub const FABRIC_1201_TEMPLATE: &[EmbeddedFile] = &[
         bytes: include_bytes!("../../templates/fabric-1.20.1-mod/src/main/resources/assets/{{MOD_ID}}/textures/item/example_item.png"),
     },
     EmbeddedFile {
+        path: "CHANGELOG.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/CHANGELOG.md"),
+    },
+    EmbeddedFile {
+        path: "src/main/resources/assets/{{MOD_ID}}/models/item/darksteel_sword.json",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/src/main/resources/assets/{{MOD_ID}}/models/item/darksteel_sword.json"),
+    },
+    EmbeddedFile {
+        path: "src/main/resources/assets/{{MOD_ID}}/textures/item/darksteel_sword.png",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/src/main/resources/assets/{{MOD_ID}}/textures/item/darksteel_sword.png"),
+    },
+    EmbeddedFile {
+        path: "src/main/resources/data/{{MOD_ID}}/recipes/darksteel_sword.json",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/src/main/resources/data/{{MOD_ID}}/recipes/darksteel_sword.json"),
+    },
+    EmbeddedFile {
+        path: "src/main/resources/data/{{MOD_ID}}/advancements/root.json",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/src/main/resources/data/{{MOD_ID}}/advancements/root.json"),
+    },
+    EmbeddedFile {
         path: "src/main/resources/fabric.mod.json",
         bytes: include_bytes!("../../templates/fabric-1.20.1-mod/src/main/resources/fabric.mod.json"),
     },

@@ -21,7 +21,7 @@ import cssWorker from "monaco-editor/language/css/css.worker.js?worker";
 import htmlWorker from "monaco-editor/language/html/html.worker.js?worker";
 import tsWorker from "monaco-editor/language/typescript/ts.worker.js?worker";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 (self as any).MonacoEnvironment = {
   getWorker(_workerId: string, label: string): Worker {
     switch (label) {

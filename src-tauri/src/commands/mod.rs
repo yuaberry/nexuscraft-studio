@@ -1,5 +1,6 @@
 pub mod environment;
 pub mod fs;
+pub mod github;
 pub mod git;
 pub mod launcher;
 pub mod process;

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
-import { ChevronRight, Loader2, Play, Save, X } from "lucide-react";
+import { ChevronRight, Github, Loader2, Play, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import { FileTree } from "./FileTree";
 import { SnapshotPanel } from "./SnapshotPanel";
 import { BuildDrawer } from "./BuildDrawer";
 import { LaunchDialog } from "./LaunchDialog";
+import { PublishDialog } from "./PublishDialog";
 import type { ProjectFileEntry } from "@/types";
 
 interface OpenTab {
@@ -44,6 +45,7 @@ export function ProjectWorkspacePage() {
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [launchOpen, setLaunchOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const [files, setFiles] = useState<ProjectFileEntry[]>([]);
   const [filesLoading, setFilesLoading] = useState(true);
   const [tabs, setTabs] = useState<OpenTab[]>([]);
@@ -211,6 +213,15 @@ export function ProjectWorkspacePage() {
           </Badge>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPublishOpen(true)}
+            title="Publish to GitHub"
+          >
+            <Github className="h-3.5 w-3.5" />
+            Publish
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setLaunchOpen(true)} title="Run in Minecraft">
             <Play className="h-3.5 w-3.5" />
             Run
@@ -359,6 +370,9 @@ export function ProjectWorkspacePage() {
 
       {/* Run Minecraft with this mod */}
       <LaunchDialog project={project} open={launchOpen} onOpenChange={setLaunchOpen} />
+
+      {/* Publish to GitHub */}
+      <PublishDialog project={project} open={publishOpen} onOpenChange={setPublishOpen} />
 
       {/* Build drawer — terminal, Error Center, Auto-Fix */}
       <BuildDrawer

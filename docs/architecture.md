@@ -73,7 +73,11 @@ Wizard, start/stop, console, backups. Prison/SkyBlock/economia ficam em template
 | 4 ✅ | Build System | `./gradlew build` ao vivo; Error Center; Auto-Fix ≤5; **E2E: jar compilado** |
 | 5 ✅ | Instâncias + Launcher | Downloads oficiais SHA-1 (E2E 718MB); device flow MSA (client id configurável); RUN lança com o mod |
 | 6 ✅ | Server Studio | E2E: vanilla 1.20.1 boot→stop→backup→restore provado; Paper via Fill API; stdin console |
-| 7 | GitHub + E2E | Dark Kingdom: Create → Build → Run; push para GitHub |
+| 7 ✅ | GitHub + E2E | Dark Kingdom criado automaticamente (jar compilado); publish com device flow e push auditado |
+
+**MVP completo.** Pós-MVP: Modpack Creator, Shader/Resource/World Studios,
+Forge/NeoForge templates, Server Templates (Prison…), Marketplace, Docker e
+cloud opcional — todos com interfaces já reservadas no design de serviços.
 
 ## Regras de desenvolvimento
 

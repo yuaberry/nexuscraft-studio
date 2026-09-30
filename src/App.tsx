@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
+import { toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useProjectsStore } from "@/stores/projectsStore";
 import { HomePage } from "@/features/home/HomePage";
@@ -29,12 +31,110 @@ export default function App() {
       .catch(() => {});
   }, [hydrate, hydrateProjects]);
 
+  const projectsLoaded = useProjectsStore((s) => s.loaded);
+  const projectsCount = useProjectsStore((s) => s.projects.length);
+  const addProject = useProjectsStore((s) => s.addProject);
+
+  // Briefing §52 — the Dark Kingdom example materializes on first run:
+  // only when a workspace exists and no projects are registered. If the
+  // folder is already on disk, the Rust guard refuses the duplicate and
+  // this stays silent.
+  useEffect(() => {
+    if (!loaded || !projectsLoaded || projectsCount > 0) return;
+    const basePath = useSettingsStore.getState().settings.storage.basePath;
+    if (!basePath) return;
+
+    void (async () => {
+      try {
+        const { resolveTemplateParams, templateParamsToPayload } =
+          await import("@/services/minecraft/versionCatalog");
+        const { createProject, defaultPackageFor } =
+          await import("@/services/projects/projectsService");
+        const { insertProject } = await import(
+          "@/services/db/repositories/projectsRepository"
+        );
+
+        const settings = useSettingsStore.getState().settings;
+        const params = await resolveTemplateParams(settings.minecraft.defaultVersion);
+
+        // Idempotent by design: StrictMode double-mounts in dev, and a folder
+        // may survive a previous run — if the scaffold already exists, adopt
+        // it instead of failing.
+        let projectPath: string;
+        try {
+          const result = await createProject({
+            storageBase: basePath,
+            slug: "dark-kingdom",
+            name: "Dark Kingdom",
+            template: "fabric-1.20.1-mod",
+            modId: "dark_kingdom",
+            modIdClass: "DarkKingdom",
+            package: defaultPackageFor("dark_kingdom"),
+            description:
+              "The NexusCraft example project — a dark medieval sword, recipe and advancement to build upon.",
+            license: settings.general.defaultLicense,
+            author: settings.general.authorName || "NexusCraft",
+            ...templateParamsToPayload(params),
+          });
+          projectPath = result.projectPath;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          const existing = `${basePath}/projects/dark-kingdom`;
+          if (message.includes("already exists")) {
+            projectPath = existing; // adopt the existing scaffold
+          } else {
+            throw error;
+          }
+        }
+
+        const now = new Date().toISOString();
+        const record = {
+          id: crypto.randomUUID(),
+          name: "Dark Kingdom",
+          slug: "dark-kingdom",
+          type: "mod" as const,
+          minecraft_version: params.minecraftVersion,
+          loader: "fabric" as const,
+          description:
+            "The NexusCraft example project — a dark medieval sword, recipe and advancement to build upon.",
+          license: settings.general.defaultLicense,
+          path: projectPath,
+          repository_url: null,
+          status: "active",
+          last_build_status: null,
+          last_build_at: null,
+          created_at: now,
+          updated_at: now,
+        };
+        await insertProject(record);
+        addProject(record);
+        toast.success("Example project: Dark Kingdom", {
+          description: "Sword, recipe and advancement — Build it, then Run it.",
+        });
+      } catch (error) {
+        // Quiet in the UI, loud in the logs table — observability by design
+        console.info("Dark Kingdom example not created:", error);
+        const message = error instanceof Error ? error.message : String(error);
+        void import("@/services/db/client")
+          .then(async ({ getDb }) => {
+            const db = await getDb();
+            await db.execute(
+              "INSERT INTO logs (level, source, message) VALUES ('warn', 'example', $1)",
+              [`dark-kingdom skipped: ${message}`.slice(0, 2000)],
+            );
+          })
+          .catch(() => {});
+      }
+    })();
+  }, [loaded, projectsLoaded, projectsCount, addProject]);
+
   useEffect(() => {
     document.documentElement.dataset.accent = accent;
     document.documentElement.dataset.reduceMotion = String(reduceMotion);
   }, [accent, reduceMotion]);
 
   return (
+    <ErrorBoundary>
     <TooltipProvider delayDuration={200}>
       <HashRouter>
         {loaded ? (
@@ -56,6 +156,7 @@ export default function App() {
       </HashRouter>
       <Toaster />
     </TooltipProvider>
+    </ErrorBoundary>
   );
 }
 

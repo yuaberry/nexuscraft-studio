@@ -9,7 +9,7 @@ import type { ProjectRecord } from "@/types";
  */
 
 export interface PrepareResult {
-  instance_dir: string;
+  instanceDir: string;
   downloaded: number;
   skipped: number;
 }

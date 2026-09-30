@@ -174,7 +174,7 @@ export function CreateProjectWizard() {
         loader: "fabric",
         description: description.trim() || null,
         license,
-        path: result.project_path,
+        path: result.projectPath,
         repository_url: null,
         status: "active",
         last_build_status: null,
@@ -186,7 +186,7 @@ export function CreateProjectWizard() {
       addProject(record);
 
       toast.success(`Project "${name.trim()}" created`, {
-        description: `${result.files_created} files · MC ${resolved.minecraftVersion} · Java ${resolved.javaRelease}`,
+        description: `${result.filesCreated} files · MC ${resolved.minecraftVersion} · Java ${resolved.javaRelease}`,
       });
       setOpen(false);
       setName("");

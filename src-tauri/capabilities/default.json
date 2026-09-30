@@ -66,6 +66,12 @@
         },
         {
           "url": "https://api.minecraftservices.com/*"
+        },
+        {
+          "url": "https://github.com/*"
+        },
+        {
+          "url": "https://api.github.com/*"
         }
       ]
     }

@@ -170,14 +170,15 @@ pub fn open_in_file_manager(path: String) -> Result<(), String> {
     }
 }
 
-/// Opens a Microsoft authentication page in the system browser.
-/// Hard-restricted to Microsoft sign-in hosts — never arbitrary URLs.
+/// Opens a Microsoft or GitHub authentication page in the system browser.
+/// Hard-restricted to sign-in hosts — never arbitrary URLs.
 #[tauri::command]
 pub fn open_auth_url(url: String) -> Result<(), String> {
     let trimmed = url.trim();
     let allowed = trimmed.starts_with("https://www.microsoft.com/")
         || trimmed.starts_with("https://login.microsoftonline.com/")
-        || trimmed.starts_with("https://login.live.com/");
+        || trimmed.starts_with("https://login.live.com/")
+        || trimmed.starts_with("https://github.com/login");
     if !allowed {
         return Err("Only Microsoft sign-in pages can be opened".to_string());
     }

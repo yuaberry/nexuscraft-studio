@@ -1,4 +1,5 @@
 export { GeneralSettings } from "./GeneralSettings";
+export { GithubSettings } from "./GithubSettings";
 export { AppearanceSettings } from "./AppearanceSettings";
 export { AiSettings } from "./AiSettings";
 export { MinecraftSettings } from "./MinecraftSettings";

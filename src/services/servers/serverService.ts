@@ -23,7 +23,7 @@ export async function createServerCommand(options: {
   ramMb: number;
   acceptEula: boolean;
 }): Promise<ServerSetupResult> {
-  const result = await invoke<{ server_dir: string; jar_path: string }>(
+  const result = await invoke<{ serverDir: string; jarPath: string }>(
     "server_create",
     {
       basePath: options.basePath,
@@ -36,7 +36,7 @@ export async function createServerCommand(options: {
       acceptEula: options.acceptEula,
     },
   );
-  return { serverDir: result.server_dir, jarPath: result.jar_path };
+  return { serverDir: result.serverDir, jarPath: result.jarPath };
 }
 
 export { slugify };
@@ -76,17 +76,17 @@ export async function backupServer(
 ): Promise<ServerBackupInfo> {
   const result = await invoke<{
     id: string;
-    file_name: string;
+    fileName: string;
     path: string;
-    size_bytes: number;
-    created_at: string;
+    sizeBytes: number;
+    createdAt: string;
   }>("server_backup", { basePath, slug });
   return {
     id: result.id,
-    fileName: result.file_name,
+    fileName: result.fileName,
     path: result.path,
-    sizeBytes: result.size_bytes,
-    createdAt: result.created_at,
+    sizeBytes: result.sizeBytes,
+    createdAt: result.createdAt,
   };
 }
 
@@ -97,18 +97,18 @@ export async function listServerBackups(
   const rows = await invoke<
     Array<{
       id: string;
-      file_name: string;
+      fileName: string;
       path: string;
-      size_bytes: number;
-      created_at: string;
+      sizeBytes: number;
+      createdAt: string;
     }>
   >("server_list_backups", { basePath, slug });
   return rows.map((row) => ({
     id: row.id,
-    fileName: row.file_name,
+    fileName: row.fileName,
     path: row.path,
-    sizeBytes: row.size_bytes,
-    createdAt: row.created_at,
+    sizeBytes: row.sizeBytes,
+    createdAt: row.createdAt,
   }));
 }
 

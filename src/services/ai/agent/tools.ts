@@ -329,7 +329,7 @@ export function buildTools(): ToolExecutor[] {
           ctx.projectRel,
           optStr(args, "reason") ?? "agent checkpoint",
         );
-        return `Snapshot ${snapshot.label} created (${snapshot.short_sha})`;
+        return `Snapshot ${snapshot.label} created (${snapshot.shortSha})`;
       },
     },
 
@@ -344,7 +344,7 @@ export function buildTools(): ToolExecutor[] {
         const snapshots = await listSnapshots(ctx.basePath, ctx.projectRel);
         if (snapshots.length === 0) return "No snapshots yet (initial scaffold commit exists).";
         return snapshots
-          .map((s) => `${s.label} | ${s.reason || s.short_sha} | ${s.date}`)
+          .map((s) => `${s.label} | ${s.reason || s.shortSha} | ${s.date}`)
           .join("\n");
       },
     },

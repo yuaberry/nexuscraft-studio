@@ -94,7 +94,7 @@ export function LaunchDialog({ project, open, onOpenChange }: Props) {
         name: `${project.name} — instance`,
         mcVersion: project.minecraft_version,
         loaderVersion,
-        path: result.instance_dir,
+        path: result.instanceDir,
       }).catch(() => {});
       setInstanceReady(true);
       const jar = await copyModJar(basePath, slug, `projects/${slug}`).catch(() => null);

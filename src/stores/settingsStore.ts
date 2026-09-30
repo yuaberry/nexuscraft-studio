@@ -36,6 +36,9 @@ const DEFAULT_SETTINGS: AppSettings = {
     clientId: "",
     ramMb: 4096,
   },
+  github: {
+    clientId: "",
+  },
 };
 
 function mergeSection<T>(base: T, loaded: unknown): T {
@@ -70,6 +73,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
         java: mergeSection(DEFAULT_SETTINGS.java, raw.java),
         storage: mergeSection(DEFAULT_SETTINGS.storage, raw.storage),
         launcher: mergeSection(DEFAULT_SETTINGS.launcher, raw.launcher),
+        github: mergeSection(DEFAULT_SETTINGS.github, raw.github),
       };
       set({ settings, loaded: true, loadError: null });
     } catch (error) {

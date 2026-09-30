@@ -4,6 +4,7 @@ import {
   AiSettings,
   AppearanceSettings,
   GeneralSettings,
+  GithubSettings,
   JavaSettings,
   LauncherSettings,
   MinecraftSettings,
@@ -19,6 +20,7 @@ export const SETTINGS_SECTIONS = [
   { id: "minecraft", label: "Minecraft" },
   { id: "java", label: "Java" },
   { id: "launcher", label: "Launcher" },
+  { id: "github", label: "GitHub" },
   { id: "storage", label: "Storage" },
   { id: "security", label: "Security" },
   { id: "advanced", label: "Advanced" },
@@ -68,6 +70,7 @@ export function SettingsPage() {
           {active === "minecraft" && <MinecraftSettings />}
           {active === "java" && <JavaSettings />}
           {active === "launcher" && <LauncherSettings />}
+          {active === "github" && <GithubSettings />}
           {active === "storage" && <StorageSettings />}
           {active === "security" && <SecuritySettings />}
           {active === "advanced" && <AdvancedSettings />}

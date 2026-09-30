@@ -161,7 +161,7 @@ export function SnapshotPanel({ basePath, projectRel, onAfterRestore }: Snapshot
                     {snapshot.label}
                   </p>
                   <p className="truncate text-[10px] text-muted-foreground/70">
-                    {snapshot.reason || snapshot.short_sha}
+                    {snapshot.reason || snapshot.shortSha}
                   </p>
                 </div>
                 <span className="shrink-0 font-mono text-[9px] text-muted-foreground/50">

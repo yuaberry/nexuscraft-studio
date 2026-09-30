@@ -166,7 +166,7 @@ export function AiCreatorPage() {
     [timeline],
   );
 
-  const requireApiKeyAndModel = async (): Promise<boolean> => {
+  const requireApiKeyAndModel = useCallback(async (): Promise<boolean> => {
     const meta = getProviderMeta(aiSettings.provider);
     if (meta.requiresKey && !(await secretsGet(AI_API_KEY_ID))) {
       toast.error("Configure your API key first", { description: "Settings → AI → API key" });
@@ -179,7 +179,7 @@ export function AiCreatorPage() {
       return false;
     }
     return true;
-  };
+  }, [aiSettings.provider, aiSettings.model, navigate]);
 
   // -------------------------------------------------------------------------
   // Design chat (streaming, no tools)
@@ -271,6 +271,15 @@ export function AiCreatorPage() {
   // -------------------------------------------------------------------------
   // Agent run (tool loop)
   // -------------------------------------------------------------------------
+  const refreshContext = useCallback(async () => {
+    if (!project) return;
+    try {
+      setContext(await loadProjectContext(project));
+    } catch {
+      // context refresh is best-effort
+    }
+  }, [project]);
+
   const runAgentTurn = useCallback(
     async (text: string, activeSession: AiSessionRecord) => {
       if (!project || !context || !basePath) return;
@@ -357,17 +366,8 @@ export function AiCreatorPage() {
         await refreshContext();
       }
     },
-    [project, context, basePath, aiSettings, textHistory],
+    [project, context, basePath, aiSettings, textHistory, refreshContext],
   );
-
-  const refreshContext = useCallback(async () => {
-    if (!project) return;
-    try {
-      setContext(await loadProjectContext(project));
-    } catch {
-      // context refresh is best-effort
-    }
-  }, [project]);
 
   const handleSend = useCallback(
     async (text: string) => {

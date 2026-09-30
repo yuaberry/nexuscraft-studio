@@ -127,7 +127,7 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
     } finally {
       setBuilding(false);
     }
-  }, [basePath, building, project, onToggle, patchProject]);
+  }, [basePath, building, project, onToggle, patchProject, customJava]);
 
   const handleStop = useCallback(async () => {
     abortRef.current = true;
@@ -233,7 +233,7 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
       state.running = false;
       setAutoFix({ ...state });
     }
-  }, [basePath, run, errors, aiSettings, project, navigate, patchProject]);
+  }, [basePath, run, errors, aiSettings, project, navigate, patchProject, customJava]);
 
   const busy = building || (autoFix?.running ?? false);
   const statusDot =

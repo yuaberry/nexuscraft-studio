@@ -34,6 +34,11 @@ export interface StorageSettings {
   basePath: string;
 }
 
+export interface GithubSettings {
+  /** GitHub OAuth app client id (device flow). */
+  clientId: string;
+}
+
 export interface LauncherSettings {
   /** Azure (MSA) application client id — required for device-flow sign-in. */
   clientId: string;
@@ -48,6 +53,7 @@ export interface AppSettings {
   java: JavaSettings;
   storage: StorageSettings;
   launcher: LauncherSettings;
+  github: GithubSettings;
 }
 
 export type ProjectType = "mod";
@@ -94,8 +100,8 @@ export interface CreateProjectRequest {
 }
 
 export interface CreateProjectResult {
-  project_path: string;
-  files_created: number;
+  projectPath: string;
+  filesCreated: number;
 }
 
 export interface ProjectFileEntry {
@@ -106,7 +112,7 @@ export interface ProjectFileEntry {
 
 export interface SnapshotEntry {
   sha: string;
-  short_sha: string;
+  shortSha: string;
   label: string;
   reason: string;
   date: string;

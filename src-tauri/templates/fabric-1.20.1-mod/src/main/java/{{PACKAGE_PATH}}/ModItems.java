@@ -4,6 +4,8 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.ToolMaterials;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
@@ -24,11 +26,18 @@ public class ModItems {
     public static final Item EXAMPLE_ITEM = register("example_item",
             new Item(new Item.Settings()));
 
+    /** Starter sword — shows the full item pipeline (model, lang, recipe). */
+    public static final Item DARKSTEEL_SWORD = register("darksteel_sword",
+            new SwordItem(ToolMaterials.IRON, 4, -2.4F, new Item.Settings()));
+
     /** Creative tab for this mod. */
     public static final ItemGroup EXAMPLE_GROUP = FabricItemGroup.builder()
             .icon(() -> new ItemStack(EXAMPLE_ITEM))
             .displayName(Text.translatable("itemgroup.{{MOD_ID}}.example"))
-            .entries((context, entries) -> entries.add(EXAMPLE_ITEM))
+            .entries((context, entries) -> {
+                entries.add(EXAMPLE_ITEM);
+                entries.add(DARKSTEEL_SWORD);
+            })
             .build();
 
     public static void initialize() {
