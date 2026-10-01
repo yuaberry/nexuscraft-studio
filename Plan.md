@@ -13,7 +13,7 @@
 - **Nome**: NexusCraft Studio · curto: NexusCraft
 - **Tagline**: "Imagine it. Describe it. Build it. Play it."
 - **Descrição**: AI Minecraft Creation Studio
-- **Repo**: `~/nexuscraft-studio` (git local, branch `main`, autor local `llinux <llinux@nexuscraft.local>`)
+- **Repo**: `~/nexuscraft-studio` (branch `main`) · **Publicado no GitHub**: https://github.com/yuaberry/nexuscraft-studio (remoto `origin`, **PRIVATE**, conta `yuaberry`, gh CLI autenticado com scopes gist/read:org/repo/workflow)
 - **Legal**: "NexusCraft Studio is an independent third-party tool and is not affiliated with Mojang Studios or Microsoft." — nunca redistribuir binários/assets proprietários; nunca bypass de auth/DRM.
 - **Idioma**: prompts do dono em PT-BR; produto/commits em inglês.
 
@@ -94,6 +94,13 @@ src-tauri/templates/fabric-1.20.1-mod/ (16→21 arquivos, inclui .nexus/, darkst
 - **Validação ao vivo achou família de bugs latente**: Rust serializa camelCase, TS lia snake_case em resultados (`project_path`→`projectPath`, `short_sha`→`shortSha`, `instance_dir`→`instanceDir`, `server_dir`/`jar_path`, campos de backup) — nunca exercitados antes. **TODOS corrigidos + validados**: DB row + espada/receita/advancement/git no disco, e **`dark-kingdom-0.1.0.jar` compilado na pasta REAL do usuário**.
 - README/docs reescritos como "MVP completo"; **18 commits**; boot final verificado.
 
+### Sessão 10 — Publicação no GitHub (lance o arquivo no GitHub)
+- `gh` CLI já estava autenticado (conta `yuaberry`); token faltava scope `workflow` → push rejeitado por causa do `ci.yml` → **refresh via device flow** (usuário autorizou no browser) → scope obtido.
+- `gh repo create nexuscraft-studio --private --source=. --remote=origin` + `git push -u origin main` → **repo no ar (PRIVATE)**.
+- CI disparou: 1ª rodada falhou (`pnpm 9` no runner não aceita `pnpm-workspace.yaml` sem `packages` — arquivo usado para `allowBuilds` no pnpm 12) → **fix: `version: 12` no action-setup** (paridade com o lockfile) → re-push.
+- Estado CI na última checagem: **queued** (fila de runners free/private) — verificar com `gh run list --limit 3` e, se falhar, `gh run view --log-failed`.
+- Para tornar o repo público: `gh repo edit yuaberry/nexuscraft-studio --visibility public` (o dono decide).
+
 ## 5. Decisões-chave (respeitar em futuras sessões)
 
 1. **Nada de fake data** — roadmap page honesta onde não há feature; TODO real em interfaces de service.
@@ -128,6 +135,8 @@ src-tauri/templates/fabric-1.20.1-mod/ (16→21 arquivos, inclui .nexus/, darkst
 | StrictMode double-mount cria exemplo 2× | App example | Validação viva → idempotência |
 | Java 21 trava shutdown do vanilla 1.20.1 | server stop | E2E server (hang 240s+) → fallback force + aviso UI |
 | Race temp-dir entre testes de agente | fs tests | cargo test flaky → bases com label |
+| CI: pnpm 9 × pnpm-workspace sem `packages` | .github/workflows/ci.yml | 1ª rodada no GitHub → action-setup version: 12 |
+| Push rejeitado sem scope `workflow` | gh token | device-flow refresh antes do push com ci.yml |
 
 ## 7. Testes & verificação (estado atual — todos verdes)
 
@@ -195,4 +204,4 @@ git log --oneline                   # 18 commits, tree limpa
 
 ---
 
-*Última atualização: Sessão 9 — Fase 7 concluída, MVP completo (18 commits). Próximo marco sugerido: release packaging (`pnpm tauri build`) ou pós-MVP §8.1.*
+*Última atualização: Sessão 10 — repo publicado no GitHub (yuaberry/nexuscraft-studio, PRIVATE, 21 commits). Próximo marco sugerido: conferir a CI (`gh run list`), depois release packaging (`pnpm tauri build`).*
