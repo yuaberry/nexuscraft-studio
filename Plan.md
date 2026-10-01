@@ -101,6 +101,15 @@ src-tauri/templates/fabric-1.20.1-mod/ (16→21 arquivos, inclui .nexus/, darkst
 - Estado CI na última checagem: **queued** (fila de runners free/private) — verificar com `gh run list --limit 3` e, se falhar, `gh run view --log-failed`.
 - Para tornar o repo público: `gh repo edit yuaberry/nexuscraft-studio --visibility public` (o dono decide).
 
+### Sessão 11 — Pós-MVP Wave 1: Economy/Tunnel/Modules + Release
+- **Server Modules misturáveis** (briefing §27/§28): datapacks vanilla gerados (nexus_economy, nexus_prison, nexus_token) — `serverModules.ts` com geradores + 5 testes vitest; namespaces nunca colidem (mix livre); pack_format 15 (1.20.1); instalação no wizard via `writeProjectFile` em `world/datapacks/` ANTES do primeiro boot.
+- **Token Chain (a "criptomoeda" do servidor)**: `ledger.rs` — blockchain real com SHA-256 (`hash = sha256(index|time|tx|from|to|amount|prev)`), append-only JSONL, `ledger_init/apply/list/verify`, saldo por replay, detecção de tamper (3 testes Rust: determinismo, mint/transfer/burn + verify, tamper detection). **O app é o banco central**: painel Economy minta/transfere/queima e verifica a cadeia; compras in-game (`/trigger nexus_token set <1-5>`) → datapack loga `[NexusCoin] BUY <player> <item>` no latest.log → `ledger_tail_intents` (Rust, offset incremental) → painel debita via ledger + entrega item via `sendServerCommand`.
+- **Compliance (briefing §28)**: moeda interna do jogo, SEM valor monetário; integração com chains externas/NFT real fica na interface `ChainProvider` RESERVADA até o dono completar o Monetization Compliance Checklist.
+- **Túnel público grátis**: `tunnel.rs` — playit.gg agent (download dos releases oficiais GitHub, chmod 755, spawn `--platform minecraft-java` + `PLAYIT_AGENT_PORT` env, stdin `exit` para stop, parse de endereço via `parseTunnelAddress` TS). UI: botão "Make public" no console → mostra endereço `*.playit.gg` com Copy.
+- **Release multi-plataforma**: `release.yml` — matrix macOS (arm64+x64)/ubuntu-22.04/windows via `tauri-action@v0` + tag v* → GitHub Release com .exe/.dmg/.deb/.AppImage.
+- **Bug caçado**: genesis block hash calculado com `to=""` mas serializado com `to=currency` → verify falhava. Fix: hash computado dos campos FINAIS do bloco (struct-update pattern `Block { hash, ..genesis }`).
+- Verificação: cargo 13/13 + 3 E2E ignored · vitest 12/12 · typecheck/lint 0 erros · vite build · cargo build · boot 14s ✓.
+
 ## 5. Decisões-chave (respeitar em futuras sessões)
 
 1. **Nada de fake data** — roadmap page honesta onde não há feature; TODO real em interfaces de service.
@@ -137,6 +146,7 @@ src-tauri/templates/fabric-1.20.1-mod/ (16→21 arquivos, inclui .nexus/, darkst
 | Race temp-dir entre testes de agente | fs tests | cargo test flaky → bases com label |
 | CI: pnpm 9 × pnpm-workspace sem `packages` | .github/workflows/ci.yml | 1ª rodada no GitHub → action-setup version: 12 |
 | Push rejeitado sem scope `workflow` | gh token | device-flow refresh antes do push com ci.yml |
+| Genesis block hash ≠ campos serializados | ledger.rs | teste verify falhou → hash computado dos campos finais |
 
 ## 7. Testes & verificação (estado atual — todos verdes)
 
@@ -149,12 +159,12 @@ src-tauri/templates/fabric-1.20.1-mod/ (16→21 arquivos, inclui .nexus/, darkst
 
 ## 8. O que ainda falta fazer (roadmap pós-MVP, priorizado)
 
-1. **Release packaging** — `pnpm tauri build` (.deb/.AppImage), testar instalador, versionar
+1. ~~Release packaging~~ → **release.yml** criado (tag v* → .exe/.dmg/.deb/.AppImage) — aguardando primeira tag
 2. **Modpack Creator** — seleção de mods, resolução de dependências, incompatibilidades, export/import, Compatibility Score
 3. **Forge & NeoForge templates** — o Version Adapter já mapeia versões; faltam templates Java análogos ao fabric-1.20.1
 4. **Shader Studio** — editor GLSL (fsh/vsh já mapeados para Monaco/cpp), preview, parameters
 5. **Resource Pack / World / Structure Studios** — texture workspace, geradores de estruturas
-6. **Server Templates** (Prison, SkyBlock, Factions…) + **Economy Engine** (+ Monetization Compliance Checklist)
+6. ~~Server Templates~~ → **MODULOS MISTURÁVEIS ENTREGUES**: Economy Coin + Prison + Token Chain (ledger SHA-256) como datapacks vanilla ✓ — próximos: SkyBlock, Factions, BedWars
 7. **Marketplace** — categorias, licenciamento (author/license/source/version/deps)
 8. **Docker + Deployment Providers** (VPS/SSH/cloud; interface `DeploymentProvider` reservada)
 9. **Cloud opcional (Supabase)** — `cloudConfig.ts` + `.env` prontos; sync/marketplace/colaboração
@@ -204,4 +214,4 @@ git log --oneline                   # 18 commits, tree limpa
 
 ---
 
-*Última atualização: Sessão 10 — repo publicado no GitHub (yuaberry/nexuscraft-studio, PRIVATE, 21 commits). Próximo marco sugerido: conferir a CI (`gh run list`), depois release packaging (`pnpm tauri build`).*
+*Última atualização: Sessão 11 — Pós-MVP Wave 1 entregue: módulos misturáveis (Economy/Prison/Token Chain com SHA-256 ledger), túnel público grátis (playit.gg), release multi-plataforma (release.yml). Próximo marco: primeira tag `v0.1.0` → executáveis para download.*

@@ -81,6 +81,16 @@ pub fn run() {
             commands::servers::server_delete,
             commands::github::git_commit_all,
             commands::github::git_push_github,
+            commands::ledger::ledger_init,
+            commands::ledger::ledger_apply,
+            commands::ledger::ledger_list,
+            commands::ledger::ledger_verify,
+            commands::ledger::ledger_tail_intents,
+            commands::tunnel::tunnel_setup,
+            commands::tunnel::tunnel_start,
+            commands::tunnel::tunnel_stop,
+            commands::tunnel::tunnel_force_stop,
+            commands::tunnel::tunnel_status,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

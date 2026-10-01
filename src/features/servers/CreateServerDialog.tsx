@@ -31,6 +31,12 @@ import {
 import { insertServer } from "@/services/db/repositories/serversRepository";
 import type { MinecraftVersionInfo } from "@/types/catalog";
 import type { ServerRecord } from "@/types";
+import {
+  DEFAULT_MODULE_OPTIONS,
+  generateSelectedModules,
+  SERVER_MODULES,
+  type ServerModuleId,
+} from "@/services/servers/serverModules";
 
 const RAM_OPTIONS = [1024, 2048, 4096, 8192];
 
@@ -51,6 +57,7 @@ export function CreateServerDialog({
   const [port, setPort] = useState("25565");
   const [ram, setRam] = useState(2048);
   const [acceptEula, setAcceptEula] = useState(false);
+  const [modules, setModules] = useState<Set<ServerModuleId>>(new Set());
   const [busy, setBusy] = useState(false);
 
   const slug = useMemo(() => slugify(name), [name]);
@@ -69,6 +76,15 @@ export function CreateServerDialog({
 
   const canCreate =
     slug.length >= 2 && mcVersion.length > 0 && acceptEula && /^\d{4,5}$/.test(port);
+
+  const toggleModule = (id: ServerModuleId) => {
+    setModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const handleCreate = async () => {
     if (!canCreate || !basePath) {
@@ -92,6 +108,16 @@ export function CreateServerDialog({
         ramMb: ram,
         acceptEula,
       });
+      // Mixable modules — install datapacks before the first boot
+      const selected = [...modules];
+      if (selected.length > 0) {
+        const { writeProjectFile } = await import("@/services/projects/projectsService");
+        const files = generateSelectedModules(selected, DEFAULT_MODULE_OPTIONS);
+        for (const file of files) {
+          await writeProjectFile(basePath, `servers/${slug}/${file.path}`, file.content);
+        }
+      }
+
       const now = new Date().toISOString();
       const record: ServerRecord = {
         id: crypto.randomUUID(),
@@ -107,6 +133,12 @@ export function CreateServerDialog({
         updated_at: now,
       };
       await insertServer(record);
+
+      // Initialize the token chain ledger when the module is selected
+      if (selected.includes("token")) {
+        const { initLedger } = await import("@/services/servers/economyService");
+        await initLedger(basePath, slug, "NexusCoin").catch(() => {});
+      }
       toast.success(`Server "${name.trim()}" created`, {
         description: "Official jar downloaded and verified. Open the console to start it.",
       });
@@ -222,6 +254,48 @@ export function CreateServerDialog({
               </a>
               . The server runs with online-mode=true — no account bypass, ever.
             </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Gameplay modules (mix freely)</Label>
+            <div className="grid gap-2">
+              {SERVER_MODULES.map((module) => {
+                const checked = modules.has(module.id);
+                return (
+                  <button
+                    key={module.id}
+                    type="button"
+                    onClick={() => toggleModule(module.id)}
+                    className={
+                      "flex items-start gap-2 rounded-lg border p-3 text-left transition-colors " +
+                      (checked
+                        ? "border-primary/50 bg-primary/10"
+                        : "border-border/60 bg-card/40 hover:border-primary/30")
+                    }
+                  >
+                    <span
+                      className={
+                        "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] " +
+                        (checked
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-muted-foreground/40")
+                      }
+                    >
+                      {checked ? "✓" : ""}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold">
+                        {module.name}
+                        <Badge variant="outline" className="text-[8px] uppercase">{module.tagline}</Badge>
+                      </span>
+                      <span className="mt-0.5 block text-[10px] leading-relaxed text-muted-foreground">
+                        {module.description}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">

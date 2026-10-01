@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { ServerEconomyPanel } from "./ServerEconomyPanel";
 import {
   backupServer,
   listServerBackups,
@@ -59,6 +60,7 @@ export function ServerConsoleDialog({ server, basePath, onClose }: Props) {
   const [backups, setBackups] = useState<ServerBackupInfo[]>([]);
   const [properties, setProperties] = useState<string | null>(null);
   const [confirmRestore, setConfirmRestore] = useState<ServerBackupInfo | null>(null);
+  const [tab, setTab] = useState<"console" | "economy">("console");
   const logRef = useRef<HTMLDivElement>(null);
   const customJava = useSettingsStore((s) => s.settings.java.customJavaPath);
 
@@ -278,6 +280,22 @@ export function ServerConsoleDialog({ server, basePath, onClose }: Props) {
           </Button>
         </div>
 
+        {/* Console / Economy tabs */}
+        <div className="flex items-center gap-1 border-b border-border/40 pb-1">
+          <button
+            className={"rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors " + (tab === "console" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground")}
+            onClick={() => setTab("console")}
+          >
+            <Terminal className="mr-1 inline h-3 w-3" /> Console
+          </button>
+          <button
+            className={"rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors " + (tab === "economy" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground")}
+            onClick={() => setTab("economy")}
+          >
+            Economy & Public
+          </button>
+        </div>
+
         {/* Properties editor */}
         {properties !== null && (
           <div className="space-y-2 rounded-lg border border-border/70 bg-card/50 p-3">
@@ -301,7 +319,7 @@ export function ServerConsoleDialog({ server, basePath, onClose }: Props) {
         {/* Console */}
         <div
           ref={logRef}
-          className="min-h-0 flex-1 overflow-y-auto rounded-lg border border-border/60 bg-background/70 p-3 font-mono text-[11px] leading-relaxed"
+          className={"min-h-0 flex-1 overflow-y-auto rounded-lg border border-border/60 bg-background/70 p-3 font-mono text-[11px] leading-relaxed " + (tab === "console" ? "" : "hidden")}
         >
           {log.length === 0 ? (
             <p className="text-muted-foreground/50">
@@ -324,6 +342,13 @@ export function ServerConsoleDialog({ server, basePath, onClose }: Props) {
             ))
           )}
         </div>
+
+        {/* Economy & Public */}
+        {tab === "economy" && server && (
+          <div className="max-h-[50%] overflow-y-auto rounded-lg border border-border/60 bg-background/70 p-3">
+            <ServerEconomyPanel server={server} basePath={basePath} />
+          </div>
+        )}
 
         {/* Command input */}
         <div className="flex gap-2">
