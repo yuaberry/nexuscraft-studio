@@ -214,4 +214,14 @@ git log --oneline                   # 18 commits, tree limpa
 
 ---
 
-*Última atualização: Sessão 11 — Pós-MVP Wave 1 entregue: módulos misturáveis (Economy/Prison/Token Chain com SHA-256 ledger), túnel público grátis (playit.gg), release multi-plataforma (release.yml). Próximo marco: primeira tag `v0.1.0` → executáveis para download.*
+### Sessão 12 — Verificação total + Release v0.1.0
+- **Verificação completa executada (tudo verde, zero erros)**:
+  - typecheck ✓ · lint 0 erros ✓ · vitest 12/12 ✓ · cargo unit 13/13 ✓
+  - E2E gradle: jar compilado (211s) ✓ · E2E launcher: 3.695 arquivos cached (59s) ✓ · E2E server: boot→stop→backup→restore (205s) ✓
+  - vite build (7m2s) ✓ · cargo build (20s) ✓ · boot 18s ✓
+  - **CI no GitHub: SUCCESS** (Rust 2m43s ✓ + Frontend 2m3s ✓)
+- **Tag `v0.1.0` pushada** → Release workflow queued: matrix macOS arm64/x64 + Ubuntu + Windows → tauri-action publicará .exe/.dmg/.deb/.AppImage/.rpm no GitHub Releases
+- E2E artifacts limpos (e2e-dark-kingdom, e2e-test-server)
+- **STATUS FINAL: MVP 100% COMPLETO + Pós-MVP Wave 1 entregue**
+
+*Última atualização: Sessão 12 — v0.1.0 tagged, Release builds queued. 24 commits, CI verde no GitHub. Todas as 7 fases do MVP + Wave 1 pós-MVP entregues.*
