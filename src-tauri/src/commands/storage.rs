@@ -1,7 +1,8 @@
 //! Storage workspace management.
 //!
 //! The workspace is a user-chosen base directory containing fixed
-//! subfolders (projects, instances, servers, backups, logs, .gradle-cache).
+//! subfolders (projects, instances, servers, backups, logs,
+//! shaderpacks, .gradle-cache).
 //! `open_in_file_manager` deliberately only opens paths inside the
 //! user's home directory — never arbitrary system paths.
 
@@ -9,12 +10,13 @@ use serde::Serialize;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
-const WORKSPACE_SUBDIRS: [&str; 6] = [
+const WORKSPACE_SUBDIRS: [&str; 7] = [
     "projects",
     "instances",
     "servers",
     "backups",
     "logs",
+    "shaderpacks",
     ".gradle-cache",
 ];
 

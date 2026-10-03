@@ -91,6 +91,11 @@ pub fn run() {
             commands::tunnel::tunnel_stop,
             commands::tunnel::tunnel_force_stop,
             commands::tunnel::tunnel_status,
+            commands::shaders::shaders_create_pack,
+            commands::shaders::shaders_list_packs,
+            commands::shaders::shaders_delete_pack,
+            commands::shaders::shaders_install_pack,
+            commands::shaders::shaders_list_instances,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

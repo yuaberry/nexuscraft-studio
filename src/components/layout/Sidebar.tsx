@@ -5,6 +5,7 @@ import {
   Settings,
   Sparkles,
   Server,
+  Palette,
   Info,
 } from "lucide-react";
 import { NexusLogo } from "@/components/brand/NexusLogo";
@@ -29,6 +30,7 @@ const workspaceItems: NavItem[] = [
   { to: "/", label: "Home", icon: Home, enabled: true },
   { to: "/projects", label: "Projects", icon: Boxes, enabled: true },
   { to: "/ai-creator", label: "AI Creator", icon: Sparkles, enabled: true },
+  { to: "/shaders", label: "Shaders", icon: Palette, enabled: true },
   { to: "/servers", label: "Servers", icon: Server, enabled: true },
 ];
 

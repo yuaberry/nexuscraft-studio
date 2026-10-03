@@ -38,6 +38,7 @@ const NAV_TARGETS = [
   { to: "/", label: "Go to Home", icon: Home, group: "Navigate" },
   { to: "/projects", label: "Go to Projects", icon: Boxes, group: "Navigate" },
   { to: "/ai-creator", label: "Go to AI Creator", icon: Sparkles, group: "Navigate" },
+  { to: "/shaders", label: "Go to Shaders", icon: Palette, group: "Navigate" },
   { to: "/servers", label: "Go to Servers", icon: Server, group: "Navigate" },
   { to: "/settings/general", label: "Settings · General", icon: Settings, group: "Settings" },
   { to: "/settings/appearance", label: "Settings · Appearance", icon: Palette, group: "Settings" },
