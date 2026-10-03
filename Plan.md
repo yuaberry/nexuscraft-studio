@@ -42,6 +42,7 @@ src/
     home/                     # Launcher-style home com projetos reais
     projects/                 # + workspace/ (BuildDrawer, LaunchDialog, PublishDialog, FileTree, SnapshotPanel)
     ai-creator/               # (ChatPanel, SpecPreview, InspectorPanel, ChangesView)
+    shaders/                  # (ShadersPage, ShaderPreviewCanvas, ShaderPackEditor)
     servers/                  # (ServersPage, CreateServerDialog, ServerConsoleDialog, ServerEconomyPanel)
     settings/sections/       # (General, Appearance, Ai, Minecraft, Java, Launcher, Github, Storage, Security, Advanced)
     roadmap/                 # Página honesta para features futuras (não fake)
@@ -54,6 +55,8 @@ src/
     servers/                 # serverService (create/start/stop/backup/restore/console)
     servers/serverModules.ts # Economy/Prison/Token Chain datapack generators
     servers/economyService.ts # Token Chain panel + market + tunnel (playit.gg)
+    shaders/                  # shaderStyleCatalog (32 presets), shaderPackGenerator,
+                              # shaderPreviewSource (WebGL), shaderService, tests
     github/githubService.ts  # device flow + createRepo + push (header transitório)
     minecraft/versionCatalog.ts # Mojang+Fabric+Forge+NeoForge+Paper auto-update
     storage/storageService.ts   # open_in_file_manager, open_auth_url
@@ -73,6 +76,8 @@ src-tauri/src/commands/
   launcher.rs     # download oficial (manifest→version.json→libs→assets→natives) + launch (KnotClient)
   servers.rs      # create (vanilla/Paper jar) + start/stop (stdin) + backup/restore (zip)
   ledger.rs       # Token Chain: SHA-256 hash chain (init/apply/list/verify) + purchase intents (log tail)
+  shaders.rs      # shaderpacks: create (allowlist vsh/fsh/glsl/properties/json, immutável),
+                  #   list (manifest nexuscraft.json), delete, install→instance, list_instances
   tunnel.rs       # playit.gg agent download + spawn + stop (free public address)
   github.rs       # git_commit_all + git_push_github (transient auth header)
   secrets.rs      # OS keyring + fallback file (chmod 600)
@@ -92,7 +97,7 @@ src-tauri/templates/fabric-1.20.1-mod/
 src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mojang + Fabric + Paper + MSA + GitHub)
 ```
 
-**Workspace do usuário**: `~/NexusCraft/{projects,instances,servers,backups,logs,.gradle-cache,minecraft,tunnel}` — basePath configurável em Settings→Storage. DB: `~/.config/dev.yuadevs.nexuscraft-studio/nexuscraft.db`.
+**Workspace do usuário**: `~/NexusCraft/{projects,instances,servers,backups,logs,shaderpacks,.gradle-cache,minecraft,tunnel}` — basePath configurável em Settings→Storage. DB: `~/.config/dev.yuadevs.nexuscraft-studio/nexuscraft.db`.
 
 ## 4. Como cada sistema funciona (arquitetura funcional)
 
@@ -150,6 +155,14 @@ src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mo
 - **2026 reality**: versões `26.3` (novo esquema YY.M), Yarn NÃO cobre 26.x → `loom.officialMojangMappings()`, Paper v2 sunset → Fill API v3, NeoForge mapeia `26.3.0.x`→`26.3`.
 - **Java por faixa**: ≥1.20.5→21, ≥1.17→17, senão 8. Versões >1.21.1 = experimental para o template.
 
+### 4.10 Shader Studio (Pós-MVP Wave 2 — Sessão 13)
+- **32 style presets** (`shaderStyleCatalog.ts`): BSL, SEUS, Complementary Reimagined, Photon, Kappa, Solas, Astralex, Fantasy (Unbound), Bliss, Spooklementary, EmanRux, Iteration T, Sundial, UShader, Verlixia, Moz, Nostalgia, CTR, Adistira, Hysteria, Shrimple, SuperDuperVanilla, Sildur's Vibrant, VTXS, N87, Vanilletix, Alpha Piscium, Derivative, Reverie, Ripple, E-Lite + categorias (cinematic/vibrant/natural/dreamy/performance). Cada preset = ~14 params (exposure, contrast, saturation, vibrance, temperature, bloom, godRays, fog, vignette, skyTop/skyHorizon/sunColor, tonemap) validados por `validateStyleParams` (ranges testados).
+- **Compliance**: presets evocam looks icônicos com **GLSL 100% original** — nada copiado/redistribuído; cada card linka busca pública do original (`modrinth.com/shaders?q=`). README do pack carrega o mesmo aviso.
+- **Gerador** (`shaderPackGenerator.ts`): pack Iris/OptiFire-compat (`shaders/composite.{vsh,fsh}` reais: exposure→tonemap ACES/Reinhard/filmic/linear, grading, bloom threshold 12-tap dual-ring, fog por depth (depthtex0), god rays screen-space (sunPosition→gbufferProjection), sky tint, vignette) + `shaders.properties` + `nexuscraft.json` (manifest lido pelo Rust) + README honesto. Packs são imutáveis (slug duplicado recusado no Rust).
+- **Preview WebGL** (`shaderPreviewSource.ts`): cena analítica (céu/sol/montanhas fbm/água animada) com o MESMO pipeline de grading do pack — o que você vê é o que o estilo faz. Fallback honesto sem WebGL.
+- **Backend** (`shaders.rs`): create com allowlist de extensões (vsh/fsh/glsl/properties/json), caps 64 arquivos/256KB, path guard compartilhado; list via manifest; install copia para `instances/<slug>/shaderpacks/` (instância preparada = `options.txt` do launcher; `copy_tree` recusa symlinks); delete guardado. Editor de packs usa `read/write_project_file` com rel `shaderpacks/<slug>/...` (zero command novo).
+- **UI** (`ShadersPage`): grid com swatch de céu por estilo + filtros de categoria; painel sticky com preview vivo + params + create; seção "Your shaderpacks" (Install→instância via Select, Edit files→Monaco com abas e Ctrl+S, Reveal, Delete com confirm). Rota `/shaders`, sidebar Palette, Topbar, Ctrl+K.
+
 ## 5. Histórico de sessões (12 sessões)
 
 | # | Fase | O que foi feito | Bugs caçados |
@@ -166,6 +179,7 @@ src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mo
 | 10 | GitHub publish | gh repo create + push + CI | scope `workflow`, pnpm 9 vs 12 |
 | 11 | Pós-MVP Wave 1 | Módulos misturáveis + Token Chain SHA-256 + túnel playit.gg + release.yml | genesis block hash ≠ campos |
 | 12 | Verificação total | 28 testes verdes + CI SUCCESS + tag v0.1.0 + Release queued | — |
+| 13 | Wave 2: Shader Studio | 32 presets de estilo + gerador GLSL real + preview WebGL + editor Monaco + install em instância | race ledger (família temp-dir), bloomTaps com parênteses faltando |
 
 ## 6. Decisões-chave (respeitar SEMPRE)
 
@@ -204,22 +218,24 @@ src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mo
 | CI pnpm 9 vs workspace yaml | 1ª rodada GitHub | version: 12 |
 | Push sem scope `workflow` | gh token | device-flow refresh |
 | Genesis block hash ≠ campos serializados | teste verify falhou | hash dos campos finais (struct-update) |
+| **Race temp-dir ledger** (base compartilhada + remove_dir_all em testes paralelos, 1-in-5 flaky) | cargo test 10x após o sintoma | base_dir(label) por teste (mesma família fs.rs) |
+| **bloomTaps: 3 `(` vs 2 `)`** — GLSL gerado não compilaria in-game | teste de paridade no gerador | sanidade (braces/parens/tokens) em TODO GLSL gerado |
 
-## 8. Estado atual (verificado — Sessão 12)
+## 8. Estado atual (verificado — Sessão 13)
 
 ### Testes (TODOS verdes)
 | Suíte | Resultado |
 |---|---|
-| Rust unit (13) | ✅ incl. ledger hash chain, tamper detection |
-| Vitest (12) | ✅ incl. errorParser, specUtils, serverModules + mix |
-| E2E gradle | ✅ jar compilado (211s) |
-| E2E launcher | ✅ 3.695 arquivos SHA-1 (59s cached) |
-| E2E server | ✅ boot→stop→backup→restore (205s) |
+| Rust unit (18) | ✅ incl. shaderpack guards, ledger chain, tamper detection |
+| Vitest (28) | ✅ incl. 32-presets íntegros, gerador GLSL sane, errorParser, serverModules |
+| E2E gradle | ✅ jar compilado (211s, Sessão 12) |
+| E2E launcher | ✅ 3.695 arquivos SHA-1 (59s cached, Sessão 12) |
+| E2E server | ✅ boot→stop→backup→restore (205s, Sessão 12) |
 | Typecheck | ✅ zero erros |
-| ESLint | ✅ 0 errors (~15 warns set-state backlog) |
-| Vite build | ✅ (7m2s) |
-| Boot | ✅ 18s vivo |
-| **CI GitHub** | ✅ **SUCCESS** (Rust 2m43s + Frontend 2m3s) |
+| ESLint | ✅ 0 errors (warns set-state-in-effect = backlog família conhecida) |
+| Vite build | ✅ (1m50s) |
+| Boot smoke | ✅ app vivo, sem crash (tauri dev) |
+| **CI GitHub** | ✅ **SUCCESS** (Rust + Frontend, Sessão 12) |
 
 ### Release
 - **Tag `v0.1.0`** pushed → Release workflow queued (matrix: macOS arm64+x64, Ubuntu, Windows)
@@ -240,14 +256,14 @@ git log --oneline                   # 25+ commits
 
 1. **Modpack Creator** — seleção de mods, resolução de dependências, incompatibilidades, export/import, Compatibility Score
 2. **Forge & NeoForge templates** — o Version Adapter já mapeia versões; faltam templates Java análogos
-3. **Shader Studio** — editor GLSL (fsh/vsh já mapeados para Monaco/cpp), preview, parameters
+3. ~~Shader Studio~~ → **ENTREGUE (Wave 2, Sessão 13)**: 32 presets + gerador real + preview WebGL + editor + install ✓ — próximos passos opcionais: passes extras (gbuffers water/waving), settings.glsl in-game (optiones Iris), screenshot preview com o jogo real
 4. **Resource Pack / World / Structure Studios** — texture workspace, geradores
 5. **Mais módulos de servidor** — SkyBlock, Factions, BedWars, Economy Engine
 6. **Marketplace** — categorias, licenciamento (author/license/source/version/deps)
 7. **Docker + Deployment Providers** — VPS/SSH/cloud (`DeploymentProvider` reservada)
 8. **Cloud opcional (Supabase)** — `cloudConfig.ts` + `.env` prontos
 9. **Chain externa real** — `ChainProvider` quando o dono completar o Compliance Checklist
-10. **Backlog de qualidade**: migrar warns `set-state-in-effect` (15), CSP no tauri.conf (null hoje), auto-refresh de sessão MSA/GitHub
+10. **Backlog de qualidade**: migrar warns `set-state-in-effect`, CSP no tauri.conf (null hoje), auto-refresh de sessão MSA/GitHub, alinhar `@tauri-apps/api` 2.9→2.12 (CLI de dev avisa mismatch e reescreve o Cargo.toml com `features = []` — neutro, mas reverter após `tauri dev`)
 
 ## 10. Regras de operação com o dono
 
@@ -272,7 +288,8 @@ git log --oneline                   # 25+ commits
 | 6 | Server Studio (E2E ciclo) + backups + console stdin | ✅ |
 | 7 | GitHub publish + Dark Kingdom + Quality (ESLint/Vitest/CI) | ✅ **MVP COMPLETO** |
 | Wave 1 | Módulos misturáveis + Token Chain SHA-256 + Túnel grátis + Release multi-OS | ✅ |
-| Próximo | Modpack Creator / Forge+NeoForge templates / Shader Studio / mais módulos | 🟡 |
+| Wave 2 | Shader Studio (32 presets, gerador GLSL real, preview WebGL, editor) | ✅ |
+| Próximo | Modpack Creator / Forge+NeoForge templates / mais módulos / Resource Pack Studio | 🟡 |
 
 ## 12. Protocolo de Retomada (executar após ler este arquivo)
 
@@ -286,4 +303,26 @@ git log --oneline                   # 25+ commits
 
 ---
 
-*Última atualização: Sessão 12 — verificação total completa (28 testes verdes, CI SUCCESS, v0.1.0 tagged, Release building). MVP 100% + Pós-MVP Wave 1 entregues. 25+ commits no GitHub. Próximo: acompanhar Release builds (`gh run list --workflow=release.yml`), depois avançar roadmap §9.*
+## 13. Sessão 13 — Shader Studio (Pós-MVP Wave 2)
+
+**Pedido do dono**: "Atualize a área de criação de Shaders para o Minecraft com os seguintes templates: [32 shaders icônicos: BSL, SEUS, Complementary Reimagined, Solas, Photon, Kappa, Astralex, Fantasy, Fantasy Unbound, Bliss, Spooklementary, EmanRux, Iteration T, Sundial, UShader, Verlixia, Moz, Nostalgia, CTR, Adistira, Hysteria, Shrimple, SuperDuperVanilla, Sildur's Vibrant, VTXS, N87, Vanilletix, Alpha Piscium, Derivative, Reverie, Ripple, E-Lite]"
+
+**Decisão de compliance (crítica)**: esses 32 são shaderpacks REAIS da comunidade com licenças próprias. Seguindo §6.1 (no fake data) e §6.7 (nada redistribuído), o Shader Studio entrega **style presets** — GLSL 100% original do nosso engine, com ~14 params afinados para evocar cada look — + link de busca pública do original (crédito honesto). Nada baixado, nada copiado.
+
+**Entregue** (detalhe funcional em §4.10):
+- `shaderStyleCatalog.ts` — 32 presets, 5 categorias, ranges validados (+8 testes)
+- `shaderPackGenerator.ts` — pack Iris/OptiFire-compat REAL (composite pass com bloom/fog/god rays/grading) + manifest + README honesto (+7 testes, incl. sanidade de parênteses que pegou bug REAL)
+- `shaderPreviewSource.ts` + `ShaderPreviewCanvas.tsx` — preview WebGL vivo com o grading exato do pack
+- `shaders.rs` (5 commands, guards + 5 testes Rust) + `shaderpacks/` no workspace
+- `ShadersPage` + `ShaderPackEditor` (Monaco, Ctrl+S via workspace guard)
+- Navegação completa (/shaders, sidebar, Ctrl+K, Topbar)
+
+**Bugs caçados na sessão**: (1) race do ledger (flaky 1-in-5 → base por label, 10x verde); (2) bloomTaps gerava GLSL com parênteses faltando — o pack NÃO compilaria in-game; teste de paridade permanente agora. (3) `validated_path` com parent inexistente no create_pack → materializar pastas antes de validar o arquivo.
+
+**Observação de ambiente**: `tauri dev` CLI reescreve `Cargo.toml` (`tauri = "2.12.0"` → `{ version = "2.12.0", features = [] }`, neutro) por causa do mismatch `@tauri-apps/api` 2.9 vs crate 2.12 — revertido, item no backlog §9.10.
+
+**Verificação**: cargo 18/18 (+5x flaky-check) · vitest 28/28 · typecheck/lint 0 errors · vite build 1m50s · boot vivo sem crash.
+
+---
+
+*Última atualização: Sessão 13 — Shader Studio entregue (Wave 2): 32 style presets, gerador GLSL real Iris/OptiFire-compat, preview WebGL, editor Monaco, install em instâncias. MVP + Wave 1 + Wave 2 completos. 27+ commits. Próximo: Modpack Creator ou Forge/NeoForge templates (§9).*
