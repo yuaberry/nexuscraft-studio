@@ -16,12 +16,14 @@
 | Tagline | "Imagine it. Describe it. Build it. Play it." |
 | Descrição | AI Minecraft Creation Studio |
 | Repo local | `~/nexuscraft-studio` (branch `main`) |
-| GitHub | https://github.com/yuaberry/nexuscraft-studio (PRIVATE, conta `yuaberry`) |
+| GitHub | https://github.com/yuaberry/nexuscraft-studio (**PÚBLICO** desde a sessão 14, conta `yuaberry`) |
+| Site oficial | https://yuaberry.github.io/nexuscraft-studio/ (GitHub Pages, deploy automático por workflow) |
+| Downloads | https://github.com/yuaberry/nexuscraft-studio/releases — Windows .exe/.msi · Linux .deb/.AppImage · macOS .dmg (arm64+x64) |
 | gh CLI | Autenticado (scopes: gist, read:org, repo, workflow) |
-| Release | Tag `v0.1.0` pushed → Release workflow building (.exe/.dmg/.deb/.AppImage) |
-| Commit count | 25+ commits, tree sempre limpa |
+| Release | v0.1.1 — executáveis multi-OS via tauri-action (matrix 4 jobs) |
 | Legal | "Independent third-party tool. Not affiliated with Mojang Studios or Microsoft." |
-| Idioma | Prompts do dono: PT-BR · Produto/commits: inglês |
+| Idioma | Prompts do dono: PT-BR · Produto/commits: inglês (README em PT-BR, site em EN) |
+| ⚠️ Sem LICENSE ainda | repo é público mas "all rights reserved" por default — site/README NÃO afirmam "open source" (honesto). Dono decide a licença depois |
 
 ## 2. Stack (estabelecida e funcionando — não mudar sem justificativa)
 
@@ -180,6 +182,7 @@ src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mo
 | 11 | Pós-MVP Wave 1 | Módulos misturáveis + Token Chain SHA-256 + túnel playit.gg + release.yml | genesis block hash ≠ campos |
 | 12 | Verificação total | 28 testes verdes + CI SUCCESS + tag v0.1.0 + Release queued | — |
 | 13 | Wave 2: Shader Studio | 32 presets de estilo + gerador GLSL real + preview WebGL + editor Monaco + install em instância | race ledger (família temp-dir), bloomTaps com parênteses faltando |
+| 14 | Site + Release público | Causa raiz da release v0.1.0 (mismatch tauri) + cross-env (Windows) + site premium + GitHub Pages + repo PÚBLICO + executáveis multi-OS | mismatch npm↔crate fatal no build, `VAR=x` não existe em cmd.exe |
 
 ## 6. Decisões-chave (respeitar SEMPRE)
 
@@ -220,6 +223,8 @@ src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mo
 | Genesis block hash ≠ campos serializados | teste verify falhou | hash dos campos finais (struct-update) |
 | **Race temp-dir ledger** (base compartilhada + remove_dir_all em testes paralelos, 1-in-5 flaky) | cargo test 10x após o sintoma | base_dir(label) por teste (mesma família fs.rs) |
 | **bloomTaps: 3 `(` vs 2 `)`** — GLSL gerado não compilaria in-game | teste de paridade no gerador | sanidade (braces/parens/tokens) em TODO GLSL gerado |
+| **Mismatch @tauri-apps npm↔crate** (api 2.9 vs tauri 2.12; plugins 2.7.3/2.4.1/2.7.0 vs 2.8/2.5/2.8) — warning no dev, **FATAL no `tauri build`** (derrubou a release v0.1.0 em TODAS as plataformas) | log do job de release no GitHub | deps alinhadas (api 2.12, plugins same-minor, cli 2.12) |
+| **`NODE_OPTIONS=… vite build` inline** — sintaxe sh-only; cmd.exe do runner Windows: `'NODE_OPTIONS' is not recognized` → beforeBuildCommand morria antes do vite | log do job Windows (exit 1 em 66s) | `cross-env NODE_OPTIONS=…` (portátil nas 3 plataformas) |
 
 ## 8. Estado atual (verificado — Sessão 13)
 
@@ -325,4 +330,32 @@ git log --oneline                   # 25+ commits
 
 ---
 
-*Última atualização: Sessão 13 — Shader Studio entregue (Wave 2): 32 style presets, gerador GLSL real Iris/OptiFire-compat, preview WebGL, editor Monaco, install em instâncias. MVP + Wave 1 + Wave 2 completos. 27+ commits. Próximo: Modpack Creator ou Forge/NeoForge templates (§9).*
+## 14. Sessão 14 — Site oficial + Release público multi-OS
+
+**Pedido do dono**: "crie e melhore o Site para algo extremamente bonito que diga o espaço do Projeto… também faça o arquivo executável para todos os Sistemas Operacionais (Windows - .EXE, LINUX, MAC OS, ETC) e publique no Site e no GitHub para download."
+
+**Descoberta crítica — por que a release v0.1.0 NUNCA saiu**: o run da tag v0.1.0 (sessão 12) falhou silenciosamente em TODAS as plataformas. Causa raiz: `tauri build` **hard-erra** quando pacotes npm e crates divergem na minor (`@tauri-apps/api` 2.9 vs `tauri` 2.12; plugin-dialog 2.7.3 vs 2.8.0; plugin-sql 2.4.1 vs 2.5.0; plugin-http 2.7.0 vs 2.8.0). O "version mismatched" que aparecia como warning no `tauri dev` local era FATAL no build. Fix: todas as deps npm alinhadas (api 2.12, plugins same-minor, cli 2.12).
+
+**Segundo bug de release (Windows)**: `"build": "NODE_OPTIONS=… vite build"` — sintaxe `VAR=value` é sh-only; o cmd.exe do runner Windows recusou (`'NODE_OPTIONS' is not recognized`) e o beforeBuildCommand morreu em 66s, antes do vite. Fix: `cross-env NODE_OPTIONS=…`. Log do runner foi a prova.
+
+**Entregue**:
+- **v0.1.1** em todos os lugares (tauri.conf, package.json, Cargo.toml, AboutDialog); bundle targets + `nsis` (setup.exe clássico no Windows) + `dmg` (macOS)
+- **Site oficial artesanal** (`website/`: index.html 335l + styles.css 651l + main.js 185l + favicon.svg — zero frameworks): hero com logo animado + OS-detect no CTA, pipeline de 7 passos, 6 feature cards, mockup interativo do app (tabs Home/Shaders/Servers com mini-preview de shaders clicável), grid com os 32 swatches REAIS do catálogo (cores extraídas por script), cards de download por OS, stats, footer legal. Reveal-on-scroll com IntersectionObserver, prefers-reduced-motion, responsivo.
+- **GitHub Pages**: workflow `pages.yml` (deploy automático em push de `website/**`) + Pages habilitado via API (`build_type=workflow`) → https://yuaberry.github.io/nexuscraft-studio/ (validado: 200 + DOM renderizado com 32 swatches e links)
+- **Repo tornado PÚBLICO** (decisão implícita do pedido: downloads públicos; `gh repo edit --visibility public`) — description + homepage atualizadas
+- **HomePage do app**: linha de stats reais do workspace (projetos/shaderpacks/servers/instâncias — dados vivos, tiles clicáveis)
+- **README refresh**: badges CI/Release, links do site e downloads, tabela com Wave 1+2, números reais (46 testes)
+- **Nomes REAIS dos assets** (o tauri sanitiza espaços do productName para PONTO): `NexusCraft.Studio_0.1.1_{arch}…` — confirmado contra a release parcial e corrigido no main.js
+
+**Re-tag**: a 1ª tentativa v0.1.1 publicou 6 assets (macOS aarch64/x64 .dmg+.app.tar.gz, Linux .deb/.AppImage) mas faltou Windows → release+tag deletadas e re-tagged no commit do cross-env para uma release íntegra de um único commit.
+
+**URLs públicas**:
+- Site: https://yuaberry.github.io/nexuscraft-studio/
+- Repo: https://github.com/yuaberry/nexuscraft-studio (público)
+- Downloads: https://github.com/yuaberry/nexuscraft-studio/releases/latest
+
+**Verificação da sessão**: typecheck ✓ · lint 0 errors ✓ · vitest 28/28 ✓ · cargo 18/18 ✓ · vite build (cross-env) ✓ · CI main ✓ · Pages deploy ✓ · site validado por DOM dump ✓ · **Release v0.1.1: SUCCESS** — 4 jobs verdes (macOS arm64 7m45s, macOS x64 5m32s, Ubuntu 4m29s, Windows), **8 assets publicados e validados por HTTP 206**: `NexusCraft.Studio_0.1.1_x64-setup.exe` (9.3MB) + `.msi` (11.9MB) · `.deb` (13.5MB) + `.AppImage` (87.4MB) · `.dmg` aarch64 (12.8MB) + x64 (13.3MB) + 2× `.app.tar.gz`.
+
+---
+
+*Última atualização: Sessão 14 — Site oficial no ar (https://yuaberry.github.io/nexuscraft-studio/), repo PÚBLICO, release v0.1.1 SUCCESS com 8 executáveis multi-OS publicados e validados (Windows .exe/.msi, Linux .deb/.AppImage, macOS .dmg arm64+x64). Causas-raiz das releases falhas corrigidas e documentadas. MVP + Wave 1 + Wave 2 + Distribuição completos. Próximo: Modpack Creator, Forge/NeoForge templates ou LICENSE do repo (§9).*
