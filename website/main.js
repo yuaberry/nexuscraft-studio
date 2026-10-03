@@ -11,8 +11,9 @@
   const VERSION = "0.1.1";
   const RELEASE_BASE = `https://github.com/${REPO}/releases/download/v${VERSION}/`;
   const ALL_RELEASES = `https://github.com/${REPO}/releases`;
-  // Tauri bundle naming: "{productName}_{version}_{arch}…" with spaces.
-  const PKG = "NexusCraft%20Studio";
+  // Tauri bundle naming: productName sanitized to "NexusCraft.Studio"
+  // (confirmed against the published release assets).
+  const PKG = "NexusCraft.Studio";
 
   const DOWNLOADS = {
     windows: [
