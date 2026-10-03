@@ -1,7 +1,7 @@
 {
   "name": "nexuscraft-studio",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "NexusCraft Studio - AI Minecraft Creation Studio",
   "type": "module",
   "scripts": {
@@ -28,10 +28,10 @@
     "@radix-ui/react-switch": "^1.1.2",
     "@radix-ui/react-tabs": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.6",
-    "@tauri-apps/api": "^2.9.0",
-    "@tauri-apps/plugin-dialog": "^2.4.0",
-    "@tauri-apps/plugin-http": "^2.7.0",
-    "@tauri-apps/plugin-sql": "^2.3.0",
+    "@tauri-apps/api": "^2.12.0",
+    "@tauri-apps/plugin-dialog": "^2.8.1",
+    "@tauri-apps/plugin-http": "^2.8.0",
+    "@tauri-apps/plugin-sql": "^2.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
@@ -47,7 +47,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.7.1",
+    "@tauri-apps/cli": "^2.12.0",
     "@types/node": "^22.10.5",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
