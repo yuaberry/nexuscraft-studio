@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Boxes,
   Check,
   ChevronRight,
   Coffee,
@@ -8,7 +9,9 @@ import {
   FolderOpen,
   GitBranch,
   Loader2,
+  Palette,
   RefreshCw,
+  Server as ServerIcon,
   Sparkles,
   Terminal,
 } from "lucide-react";
@@ -27,6 +30,11 @@ import type { ProjectRecord } from "@/types";
 import { secretsHas, AI_API_KEY_ID } from "@/services/secrets/secretsService";
 import { getProviderMeta } from "@/services/ai/providers";
 import { openInFileManager } from "@/services/storage/storageService";
+import { listServers } from "@/services/db/repositories/serversRepository";
+import {
+  listShaderInstances,
+  listShaderPacks,
+} from "@/services/shaders/shaderService";
 import { APP_TAGLINE } from "@/lib/constants";
 import type { EnvironmentInfo } from "@/types";
 
@@ -38,6 +46,7 @@ export function HomePage() {
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [env, setEnv] = useState<EnvironmentInfo | null>(null);
   const [envLoading, setEnvLoading] = useState(true);
+  const [stats, setStats] = useState<WorkspaceStats | null>(null);
   const setWizardOpen = useUiStore((s) => s.setCreateWizardOpen);
   const [runProject, setRunProject] = useState<ProjectRecord | null>(null);
   const projects = useProjectsStore((s) => s.projects);
@@ -47,6 +56,32 @@ export function HomePage() {
   useEffect(() => {
     if (!projectsLoaded) void hydrateProjects();
   }, [projectsLoaded, hydrateProjects]);
+
+  // Live workspace stats — real rows from the DB and the workspace folders
+  useEffect(() => {
+    if (!storageBase) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [servers, packs, instances] = await Promise.all([
+          listServers().catch(() => []),
+          listShaderPacks(storageBase).catch(() => []),
+          listShaderInstances(storageBase).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setStats({
+          servers: servers.length,
+          shaderPacks: packs.length,
+          instances: instances.length,
+        });
+      } catch {
+        /* stats are cosmetic — stay quiet on failure */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [storageBase, projects.length]);
 
   const provider = getProviderMeta(ai.provider);
   const aiReady =
@@ -102,6 +137,38 @@ export function HomePage() {
             </Button>
           </div>
         </section>
+
+        {/* Workspace stats — real rows, live from the workspace */}
+        {projectsLoaded && (projects.length > 0 || (stats && (stats.servers > 0 || stats.shaderPacks > 0))) && (
+          <section className="pb-10">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <StatTile
+                icon={<Boxes className="h-3.5 w-3.5" />}
+                value={projects.length}
+                label="projects"
+                onClick={() => navigate("/projects")}
+              />
+              <StatTile
+                icon={<Palette className="h-3.5 w-3.5" />}
+                value={stats?.shaderPacks ?? 0}
+                label="shaderpacks"
+                onClick={() => navigate("/shaders")}
+              />
+              <StatTile
+                icon={<ServerIcon className="h-3.5 w-3.5" />}
+                value={stats?.servers ?? 0}
+                label="servers"
+                onClick={() => navigate("/servers")}
+              />
+              <StatTile
+                icon={<Play className="h-3.5 w-3.5" />}
+                value={stats?.instances ?? 0}
+                label="instances"
+                onClick={() => navigate("/projects")}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Getting started */}
         <section className="pb-8">
@@ -325,6 +392,42 @@ function SectionHeading({ title, subtitle }: { title: string; subtitle: string }
       <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
       <p className="text-xs text-muted-foreground">{subtitle}</p>
     </div>
+  );
+}
+
+interface WorkspaceStats {
+  servers: number;
+  shaderPacks: number;
+  instances: number;
+}
+
+function StatTile({
+  icon,
+  value,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="group flex items-center gap-3 rounded-xl border border-border/70 bg-card/50 px-4 py-3 text-left transition-all hover:border-primary/40 hover:bg-card/80"
+    >
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block bg-brand-gradient bg-clip-text text-xl font-extrabold leading-none text-transparent">
+          {value}
+        </span>
+        <span className="block text-[11px] text-muted-foreground">{label}</span>
+      </span>
+      <ChevronRight className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5" />
+    </button>
   );
 }
 
