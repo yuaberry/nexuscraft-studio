@@ -329,8 +329,15 @@ pub fn ledger_tail_intents(
 mod tests {
     use super::*;
 
-    fn base_dir() -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("nexuscraft-ledger-{}", std::process::id()));
+    /// Each test gets its own base directory (same pattern as the agent
+    /// tool tests in `fs.rs`). Tests run on parallel threads — a shared
+    /// base with a trailing `remove_dir_all` deletes another test's
+    /// ledger mid-flight and makes the suite flaky.
+    fn base_dir(label: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "nexuscraft-ledger-{}-{label}",
+            std::process::id()
+        ));
         std::fs::create_dir_all(&dir).unwrap();
         dir
     }
@@ -347,7 +354,7 @@ mod tests {
 
     #[test]
     fn chain_mint_transfer_burn_and_verify() {
-        let base = base_dir();
+        let base = base_dir("chain");
         let slug = format!("test-{}", std::process::id());
         std::fs::create_dir_all(base.join("servers").join(&slug)).unwrap();
 
@@ -397,7 +404,7 @@ mod tests {
 
     #[test]
     fn tampering_is_detected() {
-        let base = base_dir();
+        let base = base_dir("tamper");
         let slug = format!("tamper-{}", std::process::id());
         std::fs::create_dir_all(base.join("servers").join(&slug)).unwrap();
         ledger_init(base.to_string_lossy().to_string(), slug.clone(), "C".into()).unwrap();
