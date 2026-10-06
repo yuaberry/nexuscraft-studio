@@ -1,6 +1,8 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Boxes,
+  ChevronsLeft,
+  ChevronsRight,
   Home,
   Settings,
   Sparkles,
@@ -8,7 +10,7 @@ import {
   Palette,
   Info,
 } from "lucide-react";
-import { NexusLogo } from "@/components/brand/NexusLogo";
+import { NexusLogo, NexusMark } from "@/components/brand/NexusLogo";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +19,7 @@ import {
 import { useUiStore } from "@/stores/uiStore";
 import { APP_VERSION } from "@/components/AboutDialog";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 interface NavItem {
   to: string;
@@ -37,64 +40,121 @@ const workspaceItems: NavItem[] = [
 export function Sidebar() {
   const navigate = useNavigate();
   const setAboutOpen = useUiStore((s) => s.setAboutOpen);
+  const collapsed = useUiStore((s) => s.sidebarCollapsed);
+  const setSidebarCollapsed = useUiStore((s) => s.setSidebarCollapsed);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+
+  // Auto-collapse on narrow windows; manual toggling still works between changes
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1100px)");
+    setSidebarCollapsed(mq.matches);
+    const onChange = (event: MediaQueryListEvent) => setSidebarCollapsed(event.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [setSidebarCollapsed]);
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border/70 bg-card/40">
+    <aside
+      className={cn(
+        "flex h-full shrink-0 flex-col border-r border-border/70 bg-card/40 transition-[width] duration-200",
+        collapsed ? "w-14" : "w-60",
+      )}
+    >
       {/* Brand */}
-      <div className="px-5 pb-4 pt-5">
-        <button
-          className="w-full text-left transition-opacity hover:opacity-85"
-          onClick={() => navigate("/")}
-        >
-          <NexusLogo />
-        </button>
-        <p className="mt-2 text-[11px] text-muted-foreground/80">
-          AI Minecraft Creation Studio
-        </p>
+      <div className={cn("flex items-center pb-4 pt-5", collapsed ? "justify-center px-2" : "px-5")}>
+        {collapsed ? (
+          <button
+            className="transition-opacity hover:opacity-85"
+            onClick={() => navigate("/")}
+            title="NexusCraft Studio"
+          >
+            <NexusMark className="h-8 w-8" />
+          </button>
+        ) : (
+          <button
+            className="w-full text-left transition-opacity hover:opacity-85"
+            onClick={() => navigate("/")}
+          >
+            <NexusLogo />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-        <p className="px-2 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-2">
+        <p
+          className={cn(
+            "px-2 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/60",
+            collapsed && "hidden",
+          )}
+        >
           Workspace
         </p>
-        {workspaceItems.map((item) => (
-          <NavItemButton key={item.to} item={item} />
-        ))}
+        <div className={cn("flex flex-col gap-0.5", collapsed && "pt-2")}>
+          {workspaceItems.map((item) => (
+            <NavItemButton key={item.to} item={item} collapsed={collapsed} />
+          ))}
+        </div>
       </nav>
 
+      {/* Collapse toggle */}
+      <div className="px-2 pb-1">
+        <button
+          className={cn(
+            "flex w-full items-center rounded-md px-3 py-1.5 text-[11px] text-muted-foreground/70 transition-colors hover:bg-accent/60 hover:text-foreground",
+            collapsed ? "justify-center" : "justify-end",
+          )}
+          onClick={toggleSidebar}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <ChevronsRight className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronsLeft className="h-3.5 w-3.5" />
+          )}
+        </button>
+      </div>
+
       {/* Footer */}
-      <div className="space-y-1 border-t border-border/70 p-3">
+      <div className="space-y-1 border-t border-border/70 p-2">
         <NavLink
           to="/settings/general"
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+              "flex items-center rounded-md px-3 py-2 text-sm transition-colors",
+              collapsed && "justify-center px-2",
               isActive
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
             )
           }
+          title="Settings"
         >
           <Settings className="h-4 w-4" />
-          Settings
+          {!collapsed && <span className="ml-3">Settings</span>}
         </NavLink>
         <button
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+          className={cn(
+            "flex w-full items-center rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground",
+            collapsed && "justify-center px-2",
+          )}
           onClick={() => setAboutOpen(true)}
+          title="About"
         >
           <Info className="h-4 w-4" />
-          About
+          {!collapsed && <span className="ml-3">About</span>}
         </button>
-        <p className="px-3 pt-2 text-[10px] leading-relaxed text-muted-foreground/50">
-          v{APP_VERSION} · Not affiliated with Mojang Studios or Microsoft
-        </p>
+        {!collapsed && (
+          <p className="px-3 pt-2 text-[10px] leading-relaxed text-muted-foreground/50">
+            v{APP_VERSION} · Not affiliated with Mojang Studios or Microsoft
+          </p>
+        )}
       </div>
     </aside>
   );
 }
 
-function NavItemButton({ item }: { item: NavItem }) {
+function NavItemButton({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
   const Icon = item.icon;
   const link = (
     <NavLink
@@ -102,7 +162,8 @@ function NavItemButton({ item }: { item: NavItem }) {
       end={item.to === "/"}
       className={({ isActive }) =>
         cn(
-          "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+          "group flex items-center rounded-md px-3 py-2 text-sm transition-colors",
+          collapsed && "justify-center px-2",
           isActive
             ? "bg-primary/10 text-primary"
             : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
@@ -110,7 +171,7 @@ function NavItemButton({ item }: { item: NavItem }) {
       }
     >
       <Icon className="h-4 w-4" />
-      {item.label}
+      {!collapsed && <span className="ml-3">{item.label}</span>}
     </NavLink>
   );
 
