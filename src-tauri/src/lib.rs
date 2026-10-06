@@ -96,6 +96,7 @@ pub fn run() {
             commands::shaders::shaders_delete_pack,
             commands::shaders::shaders_install_pack,
             commands::shaders::shaders_list_instances,
+            commands::serverping::server_ping,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to

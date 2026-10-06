@@ -7,6 +7,7 @@ pub mod process;
 pub mod projects;
 pub mod ledger;
 pub mod secrets;
+pub mod serverping;
 pub mod shaders;
 pub mod tunnel;
 pub mod servers;
