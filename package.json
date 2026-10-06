@@ -1,7 +1,7 @@
 {
   "name": "nexuscraft-studio",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "NexusCraft Studio - AI Minecraft Creation Studio",
   "type": "module",
   "scripts": {
