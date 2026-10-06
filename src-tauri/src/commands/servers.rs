@@ -185,6 +185,7 @@ pub fn server_create(
     port: u16,
     ram_mb: u32,
     accept_eula: bool,
+    properties: Option<std::collections::HashMap<String, String>>,
 ) -> Result<ServerSetupResult, String> {
     if name.trim().is_empty() {
         return Err("Server name cannot be empty".to_string());
@@ -222,22 +223,13 @@ pub fn server_create(
             compact_timestamp()
         ),
     )
-    .map_err(|e| format!("{e}"))?;
+        .map_err(|e| format!("{e}"))?;
 
-    let properties = [
-        "motd=A NexusCraft Studio server",
-        &format!("server-port={port}"),
-        "online-mode=true",
-        "gamemode=survival",
-        "level-name=world",
-        "view-distance=10",
-        "max-players=20",
-        "enable-command-block=true",
-        "spawn-protection=16",
-        "white-list=false",
-    ]
-    .join("\n");
-    std::fs::write(dir.join("server.properties"), format!("{properties}\n"))
+    let lines: Vec<String> = curated_properties(port, properties.as_ref())
+        .into_iter()
+        .map(|(k, v)| format!("{k}={v}"))
+        .collect();
+    std::fs::write(dir.join("server.properties"), format!("{}\n", lines.join("\n")))
         .map_err(|e| format!("{e}"))?;
 
     let jar_path = fetch_server_jar(&dir, &software, &mc_version)?;
@@ -246,6 +238,45 @@ pub fn server_create(
         server_dir: dir.to_string_lossy().to_string(),
         jar_path,
     })
+}
+
+/// Curated server.properties baseline, with style-preset overrides applied.
+/// Keys/values are format-validated (no separators/newlines) — the presets
+/// come from our own catalog, this is defense in depth.
+pub fn curated_properties(
+    port: u16,
+    overrides: Option<&std::collections::HashMap<String, String>>,
+) -> Vec<(String, String)> {
+    let mut curated: Vec<(String, String)> = vec![
+        ("motd".into(), "A NexusCraft Studio server".into()),
+        ("server-port".into(), port.to_string()),
+        ("online-mode".into(), "true".into()),
+        ("gamemode".into(), "survival".into()),
+        ("level-name".into(), "world".into()),
+        ("view-distance".into(), "10".into()),
+        ("max-players".into(), "20".into()),
+        ("enable-command-block".into(), "true".into()),
+        ("spawn-protection".into(), "16".into()),
+        ("white-list".into(), "false".into()),
+    ];
+    // online-mode is security-relevant and never overridable
+    if let Some(overrides) = overrides {
+        for (key, value) in overrides {
+            let valid_key = !key.is_empty()
+                && key.len() <= 64
+                && key.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
+            let valid_value = !value.contains('\n') && !value.contains('\r') && value.len() <= 256;
+            if key == "online-mode" || !valid_key || !valid_value {
+                continue;
+            }
+            if let Some(slot) = curated.iter_mut().find(|(k, _)| k == key) {
+                slot.1 = value.clone();
+            } else {
+                curated.push((key.clone(), value.clone()));
+            }
+        }
+    }
+    curated
 }
 
 #[tauri::command]
@@ -513,6 +544,52 @@ pub fn server_delete(base_path: String, slug: String) -> Result<(), String> {
 }
 
 #[cfg(test)]
+mod unit_tests {
+    use super::*;
+
+    #[test]
+    fn curated_baseline_is_complete() {
+        let props = curated_properties(25565, None);
+        let map: std::collections::HashMap<String, String> =
+            props.into_iter().collect();
+        assert_eq!(map.get("online-mode").unwrap(), "true");
+        assert_eq!(map.get("server-port").unwrap(), "25565");
+        assert_eq!(map.get("gamemode").unwrap(), "survival");
+    }
+
+    #[test]
+    fn style_overrides_apply_and_extend() {
+        let mut overrides = std::collections::HashMap::new();
+        overrides.insert("difficulty".to_string(), "hard".to_string());
+        overrides.insert("motd".to_string(), "My styled server".to_string());
+        let map: std::collections::HashMap<String, String> =
+            curated_properties(25570, Some(&overrides)).into_iter().collect();
+        assert_eq!(map.get("difficulty").unwrap(), "hard");
+        assert_eq!(map.get("motd").unwrap(), "My styled server");
+        assert_eq!(map.get("server-port").unwrap(), "25570");
+    }
+
+    #[test]
+    fn online_mode_can_never_be_overridden() {
+        let mut overrides = std::collections::HashMap::new();
+        overrides.insert("online-mode".to_string(), "false".to_string());
+        let map: std::collections::HashMap<String, String> =
+            curated_properties(25565, Some(&overrides)).into_iter().collect();
+        assert_eq!(map.get("online-mode").unwrap(), "true");
+    }
+
+    #[test]
+    fn malformed_overrides_are_dropped() {
+        let mut overrides = std::collections::HashMap::new();
+        overrides.insert("bad key".to_string(), "x".to_string());
+        overrides.insert("with\nnewline".to_string(), "x".to_string());
+        overrides.insert("".to_string(), "x".to_string());
+        let props = curated_properties(25565, Some(&overrides));
+        assert!(props.iter().all(|(k, _)| k.chars().all(|c| c != ' ' && c != '\n')));
+    }
+}
+
+#[cfg(test)]
 mod e2e_tests {
     use super::*;
     use std::io::{BufRead, BufReader, Write};
@@ -530,6 +607,8 @@ mod e2e_tests {
         let _ = std::fs::remove_dir_all(format!("{base}/servers/{slug}"));
 
         // 1. create — downloads and verifies the official jar
+        let mut style_props = std::collections::HashMap::new();
+        style_props.insert("motd".to_string(), "E2E styled".to_string());
         let setup = server_create(
             base.clone(),
             slug.to_string(),
@@ -539,10 +618,17 @@ mod e2e_tests {
             25599,
             1024,
             true,
+            Some(style_props),
         )
         .expect("server_create must succeed");
         let dir = PathBuf::from(&setup.server_dir);
         assert!(dir.join("server.jar").is_file(), "server.jar missing");
+        assert!(
+            std::fs::read_to_string(dir.join("server.properties"))
+                .unwrap()
+                .contains("motd=E2E styled"),
+            "style overrides must land in server.properties"
+        );
         assert!(dir.join("eula.txt").is_file());
         assert!(dir.join("server.properties").is_file());
 

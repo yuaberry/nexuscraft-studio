@@ -22,6 +22,8 @@ export async function createServerCommand(options: {
   port: number;
   ramMb: number;
   acceptEula: boolean;
+  /** Style-preset server.properties overrides (Rust-validated) */
+  properties?: Record<string, string>;
 }): Promise<ServerSetupResult> {
   const result = await invoke<{ serverDir: string; jarPath: string }>(
     "server_create",
@@ -34,6 +36,9 @@ export async function createServerCommand(options: {
       port: options.port,
       ramMb: options.ramMb,
       acceptEula: options.acceptEula,
+      properties: options.properties && Object.keys(options.properties).length > 0
+        ? options.properties
+        : null,
     },
   );
   return { serverDir: result.serverDir, jarPath: result.jarPath };
