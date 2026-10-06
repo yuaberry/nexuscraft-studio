@@ -183,6 +183,7 @@ src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mo
 | 12 | Verificação total | 28 testes verdes + CI SUCCESS + tag v0.1.0 + Release queued | — |
 | 13 | Wave 2: Shader Studio | 32 presets de estilo + gerador GLSL real + preview WebGL + editor Monaco + install em instância | race ledger (família temp-dir), bloomTaps com parênteses faltando |
 | 14 | Site + Release público | Causa raiz da release v0.1.0 (mismatch tauri) + cross-env (Windows) + site premium + GitHub Pages + repo PÚBLICO + executáveis multi-OS | mismatch npm↔crate fatal no build, `VAR=x` não existe em cmd.exe |
+| 15 | Wave 3: Server Styles + Ícone + Responsividade | Ícone premium v2 (51 variantes) + SLP real em Rust + 10 presets de servidor + import por endereço com MOTD colorido + IA design + referências públicas + sidebar colapsável + v0.1.2 | parser MOTD perdia texto na troca de estilo, keyword "friendly" genérica, § não-ASCII em byte-string, `online-mode` override bloqueado |
 
 ## 6. Decisões-chave (respeitar SEMPRE)
 
@@ -225,6 +226,10 @@ src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mo
 | **bloomTaps: 3 `(` vs 2 `)`** — GLSL gerado não compilaria in-game | teste de paridade no gerador | sanidade (braces/parens/tokens) em TODO GLSL gerado |
 | **Mismatch @tauri-apps npm↔crate** (api 2.9 vs tauri 2.12; plugins 2.7.3/2.4.1/2.7.0 vs 2.8/2.5/2.8) — warning no dev, **FATAL no `tauri build`** (derrubou a release v0.1.0 em TODAS as plataformas) | log do job de release no GitHub | deps alinhadas (api 2.12, plugins same-minor, cli 2.12) |
 | **`NODE_OPTIONS=… vite build` inline** — sintaxe sh-only; cmd.exe do runner Windows: `'NODE_OPTIONS' is not recognized` → beforeBuildCommand morria antes do vite | log do job Windows (exit 1 em 66s) | `cross-env NODE_OPTIONS=…` (portátil nas 3 plataformas) |
+| **Parser MOTD perdia texto na troca de estilo** — só dava flush no fim, então `§bAqua §lBold§r plain` virava só " plain" | teste vitest do parser (part[0] errado) | flush do texto acumulado a CADA mudança de estado de estilo (comportamento fiel do jogo) |
+| **Keyword heurística genérica** — "friendly" solta casava "Friendly SMP survival" como family-craft | teste de inferência | keywords compostas ("family friendly") |
+| **§ não-ASCII em `br#"…"#`** — Rust byte-string exige ASCII | cargo test não compilava | string normal + `.as_bytes()` |
+| **`online-mode` via properties** — presets nunca podem desligar | teste Rust dedicado | merge Rust descarta a key explicitamente (defense in depth no server_create) |
 
 ## 8. Estado atual (verificado — Sessão 13)
 
@@ -358,4 +363,34 @@ git log --oneline                   # 25+ commits
 
 ---
 
-*Última atualização: Sessão 14 — Site oficial no ar (https://yuaberry.github.io/nexuscraft-studio/), repo PÚBLICO, release v0.1.1 SUCCESS com 8 executáveis multi-OS publicados e validados (Windows .exe/.msi, Linux .deb/.AppImage, macOS .dmg arm64+x64). Causas-raiz das releases falhas corrigidas e documentadas. MVP + Wave 1 + Wave 2 + Distribuição completos. Próximo: Modpack Creator, Forge/NeoForge templates ou LICENSE do repo (§9).*
+## 15. Sessão 15 — Ícone premium + Server Styles + Import por link + Responsividade (Wave 3)
+
+**Pedido do dono**: "crie uma imagem/logo para os executáveis… verifique se não tem nenhum erro… adicione mais funções e termine… responsividade total… importar Estilos de Servidores já prontos (oficiais e não oficiais)… o usuário coloca o LINK do servidor e a IA pega esses DADOS e trabalha em cima, como mockups pré-prontas… referências com link de servidores… nível profissional".
+
+**Entregue**:
+
+1. **Ícone premium v2** (`scripts/generate_icon_v2.py`, Pillow, 4x supersampling): mark 3D com gradientes por face, nós cyan neon, bloom ambiente, drop shadow, edge highlight — via `pnpm tauri icon` gerou as 51 variantes (ico/icns/pngs/ios/android). É o ícone de TODOS os executáveis v0.1.2+.
+
+2. **Server List Ping REAL em Rust** (`serverping.rs`): protocolo SLP completo (VarInt framing, handshake status state, JSON payload) — o mesmo handshake de qualquer launcher, zero scraping. Resolve endereço + `connect_timeout` 5s; extrai version/protocol/players/MOTD/favicon/modinfo; chat components achatados + raw preservado. **E2E `#[ignore]` provado ao vivo contra mc.hypixel.net (20.023 players)**. 5 testes unit (varint roundtrip, wire format, parse full/legacy, garbage).
+
+3. **10 Server Style Presets** (`serverPresets.ts`): official (Vanilla Survival, Paper Survival, Creative Workshop) + community (Hardcore Realm, SkyBlock Isles, Prison Break, Economy Town, PvP Arena, Family Craft, Token Tycoon). Cada preset = software + RAM + properties + módulos datapack. **Compliance**: são configurações NOSSAS que evocam estilos conhecidos — nada de plugins/lojas de terceiros redistribuído.
+
+4. **Properties override no `server_create`** (servers.rs): parâmetro `properties` com merge validado (formato de keys, sem newline em values) — `curated_properties()` pura testada; **`online-mode` JAMAIS é overridável** (teste dedicado).
+
+5. **Import por endereço/link** (`ImportServerPanel`): input aceita `host`, `host:porta`, `https://site…` → ping real → preview com **MOTD renderizado com as cores reais** (parser completo: § codes, §x hex, chat components com named colors/bold/italic/underline/strikethrough), favicon, players, latency, mods. Inferência determinística (`inferPresetFromPing`: keywords MOTD/versão → preset) com botão "Create local server in this style" que abre o wizard pré-preenchido (properties incluem o MOTD do servidor original como homenagem).
+
+6. **IA design** (`designStyleWithAi`): manda os dados REAIS do ping pro provider configurado (via `streamChat`) → JSON validado (styleName, software, properties, modules com allowlist, rationale) → sanitizado (online-mode removido) → aplicável no wizard. Botão desabilitado com hint quando AI não está configurada (honesto).
+
+7. **Referências públicas** (`publicServers.ts`): 6 entradas reais (Hypixel, CubeCraft, Minemen, Minehut, Aternos, exaroton) com os endereços que os próprios autores publicam + sites — pingáveis AO VIVO no painel (offline mostra offline, nunca mentira).
+
+8. **Responsividade total**: sidebar colapsável para ícones (auto via `matchMedia(max-width: 1100px)` + toggle manual), window minimums 1280×720 → **1000×640**, wizard com grids `sm:grid-cols`, painel import `lg:grid-cols`.
+
+**Bugs caçados** (5, ver §7): parser MOTD flush, keyword genérica, § não-ASCII, assertion wire-format, online-mode override.
+
+**Testes**: cargo **27/27** (+4 properties, +5 SLP) + 2 E2E ignored novos (SLP real — provado) · vitest **44/44** (+16: MOTD/address/presets/referências/inferência/AI sanitize) · typecheck/lint 0 errors · boot vivo.
+
+**Release v0.1.2**: tag com ícone novo + todas as features; site atualizado para os links v0.1.2.
+
+---
+
+*Última atualização: Sessão 15 — Ícone premium (51 variantes), Server List Ping real em Rust (provado contra o Hypixel ao vivo), 10 style presets, import por endereço/link com MOTD colorido + IA design + referências públicas, responsividade total (sidebar colapsável, mínimos 1000×640). v0.1.2 tagged com tudo isso. MVP + Waves 1-3 completos. Próximo: Modpack Creator, Forge/NeoForge templates ou LICENSE (§9).*

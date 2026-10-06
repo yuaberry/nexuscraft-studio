@@ -8,7 +8,7 @@
   "use strict";
 
   const REPO = "yuaberry/nexuscraft-studio";
-  const VERSION = "0.1.1";
+  const VERSION = "0.1.2";
   const RELEASE_BASE = `https://github.com/${REPO}/releases/download/v${VERSION}/`;
   const ALL_RELEASES = `https://github.com/${REPO}/releases`;
   // Tauri bundle naming: productName sanitized to "NexusCraft.Studio"
