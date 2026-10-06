@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Plus, Server as ServerIcon } from "lucide-react";
+import { Loader2, Plus, Radar, Server as ServerIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { CreateServerDialog } from "./CreateServerDialog";
+import { CreateServerDialog, type CreateServerInitials } from "./CreateServerDialog";
 import { ServerConsoleDialog } from "./ServerConsoleDialog";
+import { ImportServerPanel } from "./ImportServerPanel";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { listServers } from "@/services/db/repositories/serversRepository";
 import { serverIsRunning } from "@/services/servers/serverService";
@@ -16,6 +17,7 @@ export function ServersPage() {
   const [servers, setServers] = useState<ServerRecord[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardInitials, setWizardInitials] = useState<CreateServerInitials | null>(null);
   const [consoleServer, setConsoleServer] = useState<ServerRecord | null>(null);
   const [runningSet, setRunningSet] = useState<Set<string>>(new Set());
 
@@ -68,8 +70,8 @@ export function ServersPage() {
           <div>
             <p className="font-semibold">No servers yet</p>
             <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
-              Spin up a vanilla or Paper server with the version catalog live —
-              jar downloaded from official sources, console and backups built in.
+              Spin up a styled server in seconds — presets below, or import the
+              vibe of any live server with a real ping.
             </p>
           </div>
           <Button variant="gradient" onClick={() => setWizardOpen(true)}>
@@ -134,12 +136,30 @@ export function ServersPage() {
         </div>
       )}
 
+      {/* Import & references — real SLP pings, live styles */}
+      <section className="pb-2">
+        <h2 className="flex items-center gap-2 pb-3 text-lg font-bold tracking-tight">
+          <Radar className="h-4 w-4 text-primary" />
+          Import & references
+        </h2>
+        <ImportServerPanel
+          onApplyPreset={(preset, name, properties) => {
+            setWizardInitials({ preset, name, properties });
+            setWizardOpen(true);
+          }}
+        />
+      </section>
+
       <CreateServerDialog
         open={wizardOpen}
         onOpenChange={(open) => {
           setWizardOpen(open);
-          if (!open) void refresh();
+          if (!open) {
+            setWizardInitials(null);
+            void refresh();
+          }
         }}
+        initials={wizardInitials}
       />
 
       <ServerConsoleDialog

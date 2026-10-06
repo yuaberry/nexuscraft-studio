@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -37,20 +37,36 @@ import {
   SERVER_MODULES,
   type ServerModuleId,
 } from "@/services/servers/serverModules";
+import {
+  SERVER_STYLE_PRESETS,
+  type ServerStylePreset,
+} from "@/services/servers/serverPresets";
+import { cn } from "@/lib/utils";
 
 const RAM_OPTIONS = [1024, 2048, 4096, 8192];
+
+export interface CreateServerInitials {
+  preset: ServerStylePreset | null;
+  name: string | null;
+  properties: Record<string, string>;
+}
 
 export function CreateServerDialog({
   open,
   onOpenChange,
+  initials,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Style/name/properties coming from the import panel (or none) */
+  initials?: CreateServerInitials | null;
 }) {
   const navigate = useNavigate();
   const basePath = useSettingsStore((s) => s.settings.storage.basePath);
 
   const [name, setName] = useState("");
+  const [presetId, setPresetId] = useState<string | null>(null);
+  const [styleProperties, setStyleProperties] = useState<Record<string, string>>({});
   const [software, setSoftware] = useState<"vanilla" | "paper">("vanilla");
   const [versions, setVersions] = useState<MinecraftVersionInfo[]>([]);
   const [mcVersion, setMcVersion] = useState<string>("");
@@ -61,6 +77,25 @@ export function CreateServerDialog({
   const [busy, setBusy] = useState(false);
 
   const slug = useMemo(() => slugify(name), [name]);
+  const activePreset = presetId
+    ? SERVER_STYLE_PRESETS.find((p) => p.id === presetId) ?? null
+    : null;
+
+  // Apply an import-panel handoff whenever the dialog opens with one
+  useEffect(() => {
+    if (!open) return;
+    if (initials) {
+      setPresetId(initials.preset?.id ?? null);
+      setStyleProperties(initials.properties);
+      if (initials.name) setName(initials.name);
+      if (initials.preset) {
+        setSoftware(initials.preset.software);
+        setRam(initials.preset.ramMb);
+        setModules(new Set(initials.preset.modules));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -73,6 +108,16 @@ export function CreateServerDialog({
       .catch(() => setVersions([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  const applyPreset = (preset: ServerStylePreset | null) => {
+    setPresetId(preset?.id ?? null);
+    setStyleProperties({});
+    if (preset) {
+      setSoftware(preset.software);
+      setRam(preset.ramMb);
+      setModules(new Set(preset.modules));
+    }
+  };
 
   const canCreate =
     slug.length >= 2 && mcVersion.length > 0 && acceptEula && /^\d{4,5}$/.test(port);
@@ -98,6 +143,7 @@ export function CreateServerDialog({
     }
     setBusy(true);
     try {
+      const properties = { ...activePreset?.properties, ...styleProperties };
       const result = await createServerCommand({
         basePath,
         slug,
@@ -107,6 +153,7 @@ export function CreateServerDialog({
         port: Number(port),
         ramMb: ram,
         acceptEula,
+        properties: Object.keys(properties).length > 0 ? properties : undefined,
       });
       // Mixable modules — install datapacks before the first boot
       const selected = [...modules];
@@ -144,6 +191,8 @@ export function CreateServerDialog({
       });
       setName("");
       setAcceptEula(false);
+      setPresetId(null);
+      setStyleProperties({});
       onOpenChange(false);
     } catch (error) {
       toast.error("Could not create server", {
@@ -156,16 +205,82 @@ export function CreateServerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[88vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create server</DialogTitle>
           <DialogDescription>
-            Official jar (vanilla via Mojang, Paper via Fill API), verified
-            checksums, isolated under your workspace.
+            Start from a ready-made style (or keep it fully manual) — official
+            jar (Mojang/Paper), verified checksums, isolated under your workspace.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Ready-made styles */}
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5">
+              <Wand2 className="h-3 w-3 text-primary" />
+              Server style
+            </Label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => applyPreset(null)}
+                className={cn(
+                  "rounded-lg border p-2.5 text-left transition-colors",
+                  presetId === null
+                    ? "border-primary/60 bg-primary/10"
+                    : "border-border/60 bg-card/40 hover:border-primary/30",
+                )}
+              >
+                <p className="text-xs font-semibold">Manual</p>
+                <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
+                  Configure everything yourself
+                </p>
+              </button>
+              {SERVER_STYLE_PRESETS.map((preset) => {
+                const active = presetId === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => applyPreset(preset)}
+                    title={preset.description}
+                    className={cn(
+                      "rounded-lg border p-2.5 text-left transition-colors",
+                      active
+                        ? "border-primary/60 bg-primary/10"
+                        : "border-border/60 bg-card/40 hover:border-primary/30",
+                    )}
+                  >
+                    <p className="flex items-center justify-between gap-1 text-xs font-semibold">
+                      <span className="truncate">{preset.name}</span>
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 shrink-0 rounded-full",
+                          preset.category === "official" ? "bg-cyan-400" : "bg-purple-400",
+                        )}
+                      />
+                    </p>
+                    <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                      {preset.tagline}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+            {activePreset && (
+              <p className="rounded-md border border-primary/20 bg-primary/5 px-2.5 py-2 text-[10px] leading-relaxed text-muted-foreground">
+                {activePreset.description}
+              </p>
+            )}
+            {presetId === null && Object.keys(styleProperties).length > 0 && (
+              <p className="rounded-md border border-primary/20 bg-primary/5 px-2.5 py-2 text-[10px] leading-relaxed text-muted-foreground">
+                AI-designed style applied — {Object.keys(styleProperties).length} curated
+                properties will be written to server.properties.
+              </p>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="server-name">Server name</Label>
             <Input
@@ -183,7 +298,7 @@ export function CreateServerDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Software</Label>
               <Select value={software} onValueChange={(v) => setSoftware(v as typeof software)}>
@@ -213,7 +328,7 @@ export function CreateServerDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="server-port">Port</Label>
               <Input
@@ -225,7 +340,7 @@ export function CreateServerDialog({
             </div>
             <div className="space-y-1.5">
               <Label>RAM</Label>
-              <div className="flex gap-1.5">
+              <div className="flex flex-wrap gap-1.5">
                 {RAM_OPTIONS.map((option) => (
                   <Button
                     key={option}
