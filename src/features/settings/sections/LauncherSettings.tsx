@@ -149,7 +149,7 @@ export function LauncherSettings() {
         <div className="max-w-md rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
           <p className="text-[11px] leading-relaxed text-amber-200/80">
             Minecraft files are downloaded at runtime from Mojang's official
-            endpoints for your local use — nothing is redistributed. NexusCraft
+            endpoints for your local use — nothing is redistributed. VOXEL
             never implements account bypasses or cracked authentication.
           </p>
         </div>
@@ -162,7 +162,7 @@ export function LauncherSettings() {
             <DialogTitle>Finish signing in</DialogTitle>
             <DialogDescription>
               Open the link below in any browser and enter the code. This
-              page is Microsoft's — NexusCraft only receives the token.
+              page is Microsoft's — VOXEL only receives the token.
             </DialogDescription>
           </DialogHeader>
           {deviceInfo && (

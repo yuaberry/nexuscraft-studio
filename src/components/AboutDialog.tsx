@@ -11,7 +11,7 @@ import { NexusMark } from "@/components/brand/NexusLogo";
 import { useUiStore } from "@/stores/uiStore";
 import { APP_TAGLINE, LEGAL_DISCLAIMER } from "@/lib/constants";
 
-export const APP_VERSION = "0.1.2";
+export const APP_VERSION = "0.2.0";
 
 export function AboutDialog() {
   const open = useUiStore((s) => s.aboutOpen);
@@ -33,11 +33,11 @@ export function AboutDialog() {
             <NexusMark className="h-14 w-14" />
             <div>
               <DialogTitle className="text-xl">
-                NexusCraft{" "}
+                VOXEL{" "}
                 <span className="text-brand-gradient">Studio</span>
               </DialogTitle>
               <DialogDescription className="mt-1">
-                AI Minecraft Creation Studio · v{runtimeVersion ?? APP_VERSION}
+                AI-Powered Creation Platform · v{runtimeVersion ?? APP_VERSION}
               </DialogDescription>
             </div>
           </div>

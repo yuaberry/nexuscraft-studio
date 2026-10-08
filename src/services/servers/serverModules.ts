@@ -7,7 +7,7 @@
  * `world/datapacks/` at boot (or `/reload` for hot installs).
  *
  * Design rule: datapacks stay 1.20.1-safe (no macros — those arrived in
- * 1.20.2). Complex state lives in the NexusCraft ledger; the datapack
+ * 1.20.2). Complex state lives in the VOXEL ledger; the datapack
  * exposes, triggers and logs.
  */
 
@@ -43,7 +43,7 @@ export const SERVER_MODULES: ServerModuleMeta[] = [
     name: "Token Chain",
     tagline: "Your own coin with a real hash-chain ledger",
     description:
-      "A server coin backed by an append-only SHA-256 ledger maintained by NexusCraft (mint/transfer/burn with block hashing + integrity verify). In-game: players see balances and buy from the market via /trigger; the app processes purchases through the chain.",
+      "A server coin backed by an append-only SHA-256 ledger maintained by VOXEL (mint/transfer/burn with block hashing + integrity verify). In-game: players see balances and buy from the market via /trigger; the app processes purchases through the chain.",
     icon: "Link",
   },
 ];
@@ -61,7 +61,7 @@ export interface ModuleInstallOptions {
 }
 
 export const DEFAULT_MODULE_OPTIONS: ModuleInstallOptions = {
-  currencyName: "NexusCoin",
+  currencyName: "VoxelCoin",
   currencySymbol: "₦",
   prisonPrestigeMultiplier: 2,
 };
@@ -75,7 +75,7 @@ function packMcmeta(moduleId: string): string {
     {
       pack: {
         pack_format: 15, // 1.20.1
-        description: `NexusCraft module: ${moduleId} (mixable)`,
+        description: `VOXEL module: ${moduleId} (mixable)`,
       },
     },
     null,
@@ -104,7 +104,7 @@ function economyFiles(options: ModuleInstallOptions): GeneratedFile[] {
 scoreboard objectives add nexus_coin dummy "[${options.currencySymbol}] ${options.currencyName}"
 scoreboard objectives add nexus_shop trigger "Shop deposit"
 scoreboard players set * nexus_shop 0
-tellraw @a [{"text":"[NexusCraft] ","color":"#a78bfa"},{"text":"${options.currencyName} economy ready","color":"gray"}]`,
+tellraw @a [{"text":"[VOXEL] ","color":"#a78bfa"},{"text":"${options.currencyName} economy ready","color":"gray"}]`,
     },
     {
       path: `world/datapacks/${coin}/data/${coin}/functions/tick.mcfunction`,
@@ -164,7 +164,7 @@ function prisonFiles(options: ModuleInstallOptions): GeneratedFile[] {
 scoreboard objectives add nexus_rank dummy "Prison rank"
 scoreboard objectives add nexus_prestige dummy "Prestige"
 scoreboard objectives add nexus_blocks_mined minecraft.mined:minecraft.stone "Blocks mined (stone family)"
-tellraw @a [{"text":"[NexusCraft] ","color":"#a78bfa"},{"text":"Prison ranks active — /function nexus_prison:status","color":"gray"}]`,
+tellraw @a [{"text":"[VOXEL] ","color":"#a78bfa"},{"text":"Prison ranks active — /function nexus_prison:status","color":"gray"}]`,
     },
     {
       path: `world/datapacks/${PRI}/data/${PRI}/functions/tick.mcfunction`,
@@ -193,7 +193,7 @@ tellraw @a [{"text":"[Prison] ","color":"#fbbf24"},{"selector":"@s","color":"#a7
     },
     {
       path: `world/datapacks/${PRI}/data/${PRI}/functions/warp_a.mcfunction`,
-      content: `# Warp to Mine A — set /setworldspawn-style anchors via the NexusCraft panel or edit coords here
+      content: `# Warp to Mine A — set /setworldspawn-style anchors via the VOXEL panel or edit coords here
 tp @s 0 -60 0
 tellraw @s [{"text":"[Prison] ","color":"#fbbf24"},{"text":"warped to Mine A","color":"gray"}]`,
     },
@@ -234,7 +234,7 @@ export function tokenFiles(options: TokenModuleOptions): GeneratedFile[] {
     },
     {
       path: `world/datapacks/${TOK}/data/${TOK}/functions/load.mcfunction`,
-      content: `# Token Chain — balances are mirrored from the NexusCraft ledger
+      content: `# Token Chain — balances are mirrored from the VOXEL ledger
 scoreboard objectives add nexus_token trigger "Market"
 scoreboard players set * nexus_token 0
 tellraw @a [{"text":"[${options.currencySymbol}] ","color":"#22d3ee"},{"text":"${options.currencyName} market ready — /trigger nexus_token set <item>","color":"gray"}]`,
@@ -258,31 +258,31 @@ execute as @s[scores={nexus_token=5}] run function ${TOK}:buy_5`,
       path: `world/datapacks/${TOK}/data/${TOK}/functions/buy_1.mcfunction`,
       content: `# Item 1: iron sword
 scoreboard players set @s nexus_token 0
-say [NexusCoin] BUY @s 1`,
+say [VoxelCoin] BUY @s 1`,
     },
     {
       path: `world/datapacks/${TOK}/data/${TOK}/functions/buy_2.mcfunction`,
       content: `# Item 2: iron pickaxe
 scoreboard players set @s nexus_token 0
-say [NexusCoin] BUY @s 2`,
+say [VoxelCoin] BUY @s 2`,
     },
     {
       path: `world/datapacks/${TOK}/data/${TOK}/functions/buy_3.mcfunction`,
       content: `# Item 3: bread x16
 scoreboard players set @s nexus_token 0
-say [NexusCoin] BUY @s 3`,
+say [VoxelCoin] BUY @s 3`,
     },
     {
       path: `world/datapacks/${TOK}/data/${TOK}/functions/buy_4.mcfunction`,
       content: `# Item 4: ender pearl x4
 scoreboard players set @s nexus_token 0
-say [NexusCoin] BUY @s 4`,
+say [VoxelCoin] BUY @s 4`,
     },
     {
       path: `world/datapacks/${TOK}/data/${TOK}/functions/buy_5.mcfunction`,
       content: `# Item 5: elytra (premium)
 scoreboard players set @s nexus_token 0
-say [NexusCoin] BUY @s 5`,
+say [VoxelCoin] BUY @s 5`,
     },
     {
       path: `world/datapacks/${TOK}/data/${TOK}/functions/balance.mcfunction`,

@@ -57,7 +57,8 @@ export function SpecPreview({
     }
     setSaving(true);
     const { project } = context;
-    const rel = `projects/${project.slug}/.nexus/project-spec.json`;
+    const { resolveSpecPath } = await import("@/services/ai/contextService");
+    const rel = await resolveSpecPath(basePath, project.slug);
     try {
       // AD-7: snapshot before significant AI-driven changes
       if (current) {

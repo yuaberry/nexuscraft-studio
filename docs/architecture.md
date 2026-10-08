@@ -1,4 +1,4 @@
-# NexusCraft Studio — Arquitetura
+# VOXEL — Arquitetura
 
 Versão condensada do plano aprovado. O documento completo com riscos e critérios por fase vive no histórico de planejamento do projeto.
 

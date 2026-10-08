@@ -72,7 +72,7 @@ export function PublishDialog({ project, open, onOpenChange }: Props) {
       const commit = await commitAll(
         basePath,
         `projects/${project.slug}`,
-        `Publish ${project.name} via NexusCraft Studio`,
+        `Publish ${project.name} via VOXEL`,
       );
       if (commit !== "Nothing to commit — working tree is clean") {
         toast.success(`Committed ${commit}`);
@@ -81,7 +81,7 @@ export function PublishDialog({ project, open, onOpenChange }: Props) {
       // 2. Create the repository
       const repo = await createGithubRepo({
         name: repoName,
-        description: project.description ?? `${project.name} — built with NexusCraft Studio`,
+        description: project.description ?? `${project.name} — built with VOXEL`,
         private: isPrivate,
       });
 

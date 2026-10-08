@@ -90,7 +90,7 @@ pub fn init_project_repo(project: &Path, author: &str) -> Result<String, String>
     git(project, &["add", "-A"])?;
     git(
         project,
-        &["commit", "-m", "Initial project scaffold (via NexusCraft Studio)"],
+        &["commit", "-m", "Initial project scaffold (via VOXEL)"],
     )?;
     let sha = stdout_trim(&git(project, &["rev-parse", "HEAD"])?);
     Ok(sha)

@@ -1,5 +1,5 @@
 /**
- * NexusCraft brand mark — an isometric voxel cube with nexus nodes.
+ * VOXEL brand mark — an isometric voxel cube with nexus nodes.
  * Pure SVG, scales cleanly from 16px favicons to launch screens.
  */
 export function NexusMark({ className }: { className?: string }) {
@@ -71,11 +71,11 @@ export function NexusLogo({
         <NexusMark className="h-8 w-8" />
         <div className="leading-none">
           <span className="text-sm font-bold tracking-[0.18em] text-foreground">
-            NEXUSCRAFT
+            VOXEL
           </span>
           {!compact && (
             <span className="ml-1.5 text-[10px] font-semibold tracking-[0.28em] text-primary">
-              STUDIO
+              AI CREATION
             </span>
           )}
         </div>

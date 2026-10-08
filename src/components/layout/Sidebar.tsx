@@ -66,7 +66,7 @@ export function Sidebar() {
           <button
             className="transition-opacity hover:opacity-85"
             onClick={() => navigate("/")}
-            title="NexusCraft Studio"
+            title="VOXEL"
           >
             <NexusMark className="h-8 w-8" />
           </button>

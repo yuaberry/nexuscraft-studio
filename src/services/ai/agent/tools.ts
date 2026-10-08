@@ -16,7 +16,7 @@ import {
 } from "@/services/projects/projectsService";
 
 /**
- * Nexus Agent tools (Phase 3).
+ * VOXEL Agent tools (Phase 3).
  *
  * Security model:
  *  - Every path goes through the Rust path guard (canonicalize + prefix check).

@@ -107,7 +107,7 @@ export function errorsToPrompt(errors: BuildError[], attempt: number): string {
     "You have tools. Fix the project so it compiles:",
     "1. read_file each file mentioned above (paths are relative to the project root)",
     "2. repair the code with edit_file or write_file",
-    "3. keep .nexus/project-spec.json truthful and respect the Style Bible",
+    "3. keep .voxel/project-spec.json truthful and respect the Style Bible",
     "4. never delete files; do not touch build.gradle dependencies",
     "5. when done, summarize the changes in one short paragraph",
   ].join("\n");

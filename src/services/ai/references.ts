@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 /**
- * Reference Board — user-provided images inside `.nexus/references/`.
+ * Reference Board — user-provided images inside `.voxel/references/`.
  * Images are stored in the project, listed, attached to chat messages as
  * vision parts, and removable. All paths go through the Rust path guard.
  */
@@ -29,7 +29,7 @@ function base(): string {
   return storageBaseCache;
 }
 
-const REF_DIR = ".nexus/references";
+const REF_DIR = ".voxel/references";
 
 export async function listReferences(projectSlug: string): Promise<ReferenceImage[]> {
   const files = await invoke<FileEntryLike[]>("list_project_files", {

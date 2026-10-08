@@ -779,7 +779,7 @@ pub fn launcher_launch(
     vars.insert("auth_uuid".into(), account.uuid);
     vars.insert("auth_access_token".into(), account.access_token);
     vars.insert("auth_xuid".into(), String::new());
-    vars.insert("clientid".into(), "nexuscraft-studio".into());
+    vars.insert("clientid".into(), "voxel".into());
     vars.insert("user_type".into(), "msa".into());
     vars.insert("user_properties".into(), "{}".into());
     vars.insert("version_name".into(), mc_version.clone());
@@ -847,7 +847,7 @@ mod e2e_tests {
     #[ignore = "e2e: downloads the full Minecraft runtime (~700MB on first run)"]
     fn e2e_launcher_prepare_full() {
         let home = std::env::var("HOME").expect("HOME");
-        let base = format!("{home}/NexusCraft");
+        let base = format!("{home}/VOXEL");
         std::fs::create_dir_all(&base).unwrap();
 
         let result = prepare_core(&base, "e2e-launch", "1.20.1", "0.16.9", &|done, total, detail| {

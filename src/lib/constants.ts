@@ -1,8 +1,8 @@
-export const APP_NAME = "NexusCraft Studio";
-export const APP_TAGLINE = "Imagine it. Describe it. Build it. Play it.";
-export const APP_DESCRIPTION = "AI Minecraft Creation Studio";
+export const APP_NAME = "VOXEL";
+export const APP_TAGLINE = "Imagine. Create. Build. Play.";
+export const APP_DESCRIPTION = "AI-Powered Creation Platform";
 export const LEGAL_DISCLAIMER =
-  "NexusCraft Studio is an independent third-party tool and is not affiliated with Mojang Studios or Microsoft.";
+  "VOXEL is an independent third-party creation platform and is not affiliated with Mojang Studios or Microsoft.";
 
 export const STORAGE_SUBDIRS = [
   "projects",

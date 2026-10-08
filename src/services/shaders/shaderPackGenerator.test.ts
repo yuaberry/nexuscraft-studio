@@ -76,7 +76,7 @@ describe("shader pack generator", () => {
   it("writes a parseable manifest consumed by the Rust backend", () => {
     const style = getShaderStyle("solas")!;
     const map = filesByPath(generateShaderPack(style, "Solas Sun", "2026-10-02T00:00:00Z").files);
-    const manifest = JSON.parse(map["nexuscraft.json"]) as {
+    const manifest = JSON.parse(map["voxel.json"]) as {
       name: string;
       styleId: string;
       createdAt: string;

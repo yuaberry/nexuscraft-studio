@@ -1,4 +1,4 @@
-# NexusCraft Studio — Agent Rules
+# VOXEL — Agent Rules
 
 1. **Continuidade**: o chat pode ser compactado. O documento-mãe é o **`Plan.md`** na raiz deste repositório. Ao iniciar qualquer trabalho: leia o `Plan.md` INTEIRO primeiro, depois `README.md` e `docs/architecture.md`, e execute o Protocolo de Retomada (Plan.md §12).
 2. **Regra do dono**: quando ele disser *"crie o arquivo Plan.md"*, gere/atualize o `Plan.md` com o estado completo (histórico de sessões, decisões, bugs, roadmap) e faça o commit.
@@ -9,4 +9,4 @@
 7. Migrations SQLite são append-only (`src-tauri/src/migrations/`).
 8. Todo sistema novo ganha teste unitário; sistemas críticos (build, launcher, servers) ganham também E2E `#[ignore]` executado com `cargo test -- --ignored`.
 9. Commits: conventional commits, unidades lógicas, mensagens em inglês explicando o porquê.
-10. Nunca implementar bypass de autenticação/DRM; downloads sempre de endpoints oficiais com checksum; "NexusCraft Studio is an independent third-party tool and is not affiliated with Mojang Studios or Microsoft."
+10. Nunca implementar bypass de autenticação/DRM; downloads sempre de endpoints oficiais com checksum; "VOXEL is an independent third-party creation platform and is not affiliated with Mojang Studios or Microsoft."

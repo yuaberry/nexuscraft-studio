@@ -6,7 +6,7 @@
 //! `ledger_verify` replays and re-hashes the whole chain.
 //!
 //! Storage: `servers/<slug>/ledger.jsonl` (one block per line, append-only).
-//! In-game purchases are detected from the server log (`[NexusCoin] BUY …`)
+//! In-game purchases are detected from the server log (`[VoxelCoin] BUY …`)
 //! and processed through this ledger by the panel (debit via transfer, item
 //! delivered via console).
 //!
@@ -277,7 +277,7 @@ pub struct PurchaseIntent {
 
 /// Returns new purchase intents since the last call (offset persisted next to
 /// the ledger). Lines look like:
-/// `[19:20:01] [Server thread/INFO]: [NexusCoin] BUY Alice 3`
+/// `[19:20:01] [Server thread/INFO]: [VoxelCoin] BUY Alice 3`
 #[tauri::command]
 pub fn ledger_tail_intents(
     base_path: String,
@@ -302,7 +302,7 @@ pub fn ledger_tail_intents(
 
     let mut intents = Vec::new();
     for line in consumed.iter() {
-        if let Some(rest) = line.split_once("[NexusCoin] BUY ") {
+        if let Some(rest) = line.split_once("[VoxelCoin] BUY ") {
             let mut parts = rest.1.split_whitespace();
             if let (Some(player), Some(item)) = (parts.next(), parts.next()) {
                 if let Ok(item_id) = item.parse::<u32>() {
@@ -358,7 +358,7 @@ mod tests {
         let slug = format!("test-{}", std::process::id());
         std::fs::create_dir_all(base.join("servers").join(&slug)).unwrap();
 
-        ledger_init(base.to_string_lossy().to_string(), slug.clone(), "NexusCoin".into())
+        ledger_init(base.to_string_lossy().to_string(), slug.clone(), "VoxelCoin".into())
             .unwrap();
 
         let tx = |tx: &str, from: &str, to: &str, amount: i64| {

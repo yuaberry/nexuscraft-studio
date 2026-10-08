@@ -60,7 +60,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "NexusCraft Studio ${{ github.ref_name }}"
+          releaseName: "VOXEL ${{ github.ref_name }}"
           releaseBody: |
             AI Minecraft Creation Studio — Create → Build → Fix → Run → Play.
             **Not affiliated with Mojang Studios or Microsoft.**

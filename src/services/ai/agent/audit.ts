@@ -1,7 +1,7 @@
 import { getDb } from "@/services/db/client";
 
 /**
- * Audit trail for every Nexus Agent tool call — policy layer 2 (AD-3).
+ * Audit trail for every VOXEL Agent tool call — policy layer 2 (AD-3).
  * One row per execution: ok / denied / error, with the exact args.
  */
 

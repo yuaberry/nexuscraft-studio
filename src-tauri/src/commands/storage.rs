@@ -81,7 +81,14 @@ fn validate_base_path(raw: &str) -> Result<PathBuf, String> {
 
 #[tauri::command]
 pub fn get_default_storage_base() -> Result<String, String> {
-    let base = home_dir()?.join("NexusCraft");
+    let home = home_dir()?;
+    // Legacy workspace from the previous brand era — keep pointing to it
+    // when it exists so no user data goes missing after the rename.
+    let legacy = home.join("NexusCraft");
+    if legacy.is_dir() {
+        return Ok(legacy.to_string_lossy().to_string());
+    }
+    let base = home.join("VOXEL");
     Ok(base.to_string_lossy().to_string())
 }
 

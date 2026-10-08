@@ -58,7 +58,7 @@ export function StorageSettings() {
     <section>
       <SectionHeader
         title="Storage"
-        description="Everything NexusCraft creates — projects, instances, servers, backups — lives under one workspace folder."
+        description="Everything VOXEL creates — projects, instances, servers, backups — lives under one workspace folder."
       />
 
       <Field

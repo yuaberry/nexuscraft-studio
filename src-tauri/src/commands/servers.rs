@@ -219,7 +219,7 @@ pub fn server_create(
     std::fs::write(
         dir.join("eula.txt"),
         format!(
-            "# Accepted via NexusCraft Studio on {}\neula=true\n",
+            "# Accepted via VOXEL on {}\neula=true\n",
             compact_timestamp()
         ),
     )
@@ -248,7 +248,7 @@ pub fn curated_properties(
     overrides: Option<&std::collections::HashMap<String, String>>,
 ) -> Vec<(String, String)> {
     let mut curated: Vec<(String, String)> = vec![
-        ("motd".into(), "A NexusCraft Studio server".into()),
+        ("motd".into(), "A VOXEL server".into()),
         ("server-port".into(), port.to_string()),
         ("online-mode".into(), "true".into()),
         ("gamemode".into(), "survival".into()),
@@ -602,7 +602,7 @@ mod e2e_tests {
     #[ignore = "e2e: downloads the vanilla server jar and boots it (~2 min)"]
     fn e2e_server_lifecycle() {
         let home = std::env::var("HOME").expect("HOME");
-        let base = format!("{home}/NexusCraft");
+        let base = format!("{home}/VOXEL");
         let slug = "e2e-test-server";
         let _ = std::fs::remove_dir_all(format!("{base}/servers/{slug}"));
 

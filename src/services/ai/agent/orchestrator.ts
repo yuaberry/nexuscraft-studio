@@ -9,7 +9,7 @@ import { logToolCall } from "./audit";
 import { buildAgentSystemPrompt } from "./promptBuilder";
 
 /**
- * Nexus Agent Orchestrator — the tool-calling loop.
+ * VOXEL Agent Orchestrator — the tool-calling loop.
  *
  * Budgets (loop protection, AD-3):
  *  - MAX_STEPS: tool-calling iterations per run

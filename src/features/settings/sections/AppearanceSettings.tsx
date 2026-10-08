@@ -20,7 +20,7 @@ export function AppearanceSettings() {
     <section>
       <SectionHeader
         title="Appearance"
-        description="NexusCraft is dark-first. Fine-tune the accent and motion."
+        description="VOXEL is dark-first. Fine-tune the accent and motion."
       />
 
       <Field label="Accent color" hint="Applies to buttons, highlights and the logo glow.">

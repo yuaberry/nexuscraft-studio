@@ -76,7 +76,7 @@ export async function designStyleWithAi(
   },
 ): Promise<AiStyleSuggestion> {
   const system = [
-    "You design Minecraft Java server configurations for NexusCraft Studio.",
+    "You design Minecraft Java server configurations for VOXEL.",
     "You will receive REAL live data from a public server (SLP ping).",
     "Design a local server style inspired by it. Answer ONLY with JSON:",
     `{"styleName":string,"description":string,"software":"vanilla"|"paper",`,

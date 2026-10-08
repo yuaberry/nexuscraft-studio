@@ -362,7 +362,7 @@ export function AiSettings() {
 
       <div className="pt-2">
         <Label className="text-[11px] text-muted-foreground/70">
-          Streaming chat, tool-calling and the Nexus Agent arrive in Phases 2–4,
+          Streaming chat, tool-calling and the VOXEL Agent arrive in Phases 2–4,
           building on this exact configuration.
         </Label>
       </div>

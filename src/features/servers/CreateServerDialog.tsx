@@ -184,7 +184,7 @@ export function CreateServerDialog({
       // Initialize the token chain ledger when the module is selected
       if (selected.includes("token")) {
         const { initLedger } = await import("@/services/servers/economyService");
-        await initLedger(basePath, slug, "NexusCoin").catch(() => {});
+        await initLedger(basePath, slug, "VoxelCoin").catch(() => {});
       }
       toast.success(`Server "${name.trim()}" created`, {
         description: "Official jar downloaded and verified. Open the console to start it.",

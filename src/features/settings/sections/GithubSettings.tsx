@@ -122,7 +122,7 @@ export function GithubSettings() {
       <Dialog open={deviceInfo !== null} onOpenChange={(open) => { if (!open) setDeviceInfo(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Authorize NexusCraft</DialogTitle>
+            <DialogTitle>Authorize VOXEL</DialogTitle>
             <DialogDescription>
               Open the link, enter the code and authorize the app. This is
               GitHub's own page.

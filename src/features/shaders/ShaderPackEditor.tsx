@@ -29,7 +29,7 @@ const EDITABLE_FILES = [
   "shaders/composite.fsh",
   "shaders/composite.vsh",
   "shaders.properties",
-  "nexuscraft.json",
+  "voxel.json",
   "README.txt",
 ] as const;
 
@@ -61,7 +61,11 @@ export function ShaderPackEditor({ pack, basePath, onClose }: ShaderPackEditorPr
           try {
             next[file] = await readShaderPackFile(basePath, pack.slug, file);
           } catch {
-            next[file] = ""; // file removed by the user — show empty, save recreates
+            // Legacy packs carry the old manifest name — read it into the tab
+            next[file] =
+              file === "voxel.json"
+                ? await readShaderPackFile(basePath, pack.slug, "nexuscraft.json").catch(() => "")
+                : ""; // file removed by the user — show empty, save recreates
           }
         }
         if (cancelled) return;

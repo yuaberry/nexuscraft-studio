@@ -51,7 +51,7 @@ interface Props {
 
 /**
  * Bottom drawer of the workspace — real build terminal + Error Center +
- * the Auto-Fix loop that feeds errors back into the Nexus Agent.
+ * the Auto-Fix loop that feeds errors back into the VOXEL Agent.
  */
 export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
   const navigate = useNavigate();
@@ -117,7 +117,7 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
         });
       } else if (result.status === "failed") {
         toast.error("Build failed", {
-          description: "Check the Error Center below — try Fix with Nexus Agent.",
+          description: "Check the Error Center below — try Fix with VOXEL Agent.",
         });
       }
     } catch (error) {
@@ -371,7 +371,7 @@ export function BuildDrawer({ project, open, onToggle, buildStatus }: Props) {
                     className="h-7 text-[11px]"
                     onClick={() => void handleAutoFix()}
                   >
-                    <Wrench className="h-3 w-3" /> Fix with Nexus Agent
+                    <Wrench className="h-3 w-3" /> Fix with VOXEL Agent
                   </Button>
                   <span className="text-[10px] text-muted-foreground/70">
                     up to {AUTO_FIX_MAX_ATTEMPTS} autonomous attempts — destructive operations are refused

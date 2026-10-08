@@ -40,7 +40,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "vanilla",
     ramMb: 2048,
     properties: {
-      motd: "A NexusCraft vanilla survival server",
+      motd: "A VOXEL vanilla survival server",
       difficulty: "normal",
       gamemode: "survival",
       "spawn-protection": "16",
@@ -58,7 +58,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "paper",
     ramMb: 4096,
     properties: {
-      motd: "A NexusCraft Paper survival server",
+      motd: "A VOXEL Paper survival server",
       difficulty: "normal",
       "view-distance": "8",
       "simulation-distance": "6",
@@ -76,7 +76,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "paper",
     ramMb: 2048,
     properties: {
-      motd: "A NexusCraft creative workshop",
+      motd: "A VOXEL creative workshop",
       gamemode: "creative",
       difficulty: "peaceful",
       pvp: "false",
@@ -94,7 +94,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "vanilla",
     ramMb: 2048,
     properties: {
-      motd: "A NexusCraft hardcore realm — one life only",
+      motd: "A VOXEL hardcore realm — one life only",
       difficulty: "hard",
       hardcore: "true",
       pvp: "true",
@@ -111,7 +111,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "paper",
     ramMb: 4096,
     properties: {
-      motd: "A NexusCraft sky-style economy server",
+      motd: "A VOXEL sky-style economy server",
       difficulty: "normal",
       "spawn-protection": "0",
       pvp: "false",
@@ -128,7 +128,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "paper",
     ramMb: 4096,
     properties: {
-      motd: "A NexusCraft prison — mine your way to freedom",
+      motd: "A VOXEL prison — mine your way to freedom",
       difficulty: "normal",
       "spawn-protection": "0",
       pvp: "true",
@@ -145,7 +145,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "paper",
     ramMb: 4096,
     properties: {
-      motd: "A NexusCraft economy town — trade & thrive",
+      motd: "A VOXEL economy town — trade & thrive",
       difficulty: "easy",
       pvp: "false",
       "spawn-protection": "8",
@@ -162,7 +162,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "paper",
     ramMb: 4096,
     properties: {
-      motd: "A NexusCraft PvP arena — good luck",
+      motd: "A VOXEL PvP arena — good luck",
       difficulty: "hard",
       "view-distance": "6",
       "simulation-distance": "4",
@@ -181,7 +181,7 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     software: "paper",
     ramMb: 2048,
     properties: {
-      motd: "A NexusCraft family-friendly server",
+      motd: "A VOXEL family-friendly server",
       difficulty: "easy",
       pvp: "false",
       "white-list": "true",
@@ -194,12 +194,12 @@ export const SERVER_STYLE_PRESETS: readonly ServerStylePreset[] = [
     name: "Token Tycoon",
     tagline: "All-in economy",
     description:
-      "Every economy system on at once — coins, the NexusCoin token chain (SHA-256 ledger) and the prison progression for grind.",
+      "Every economy system on at once — coins, the VoxelCoin token chain (SHA-256 ledger) and the prison progression for grind.",
     category: "community",
     software: "paper",
     ramMb: 8192,
     properties: {
-      motd: "A NexusCraft token tycoon server",
+      motd: "A VOXEL token tycoon server",
       difficulty: "normal",
       "spawn-protection": "0",
     },

@@ -103,7 +103,7 @@ async function* streamOpenAiCompatible(
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
       ...(settings.provider === "openrouter"
-        ? { "X-Title": "NexusCraft Studio" }
+        ? { "X-Title": "VOXEL" }
         : {}),
     },
     body: JSON.stringify({

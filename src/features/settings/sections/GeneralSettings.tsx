@@ -34,7 +34,7 @@ export function GeneralSettings() {
       />
 
       <Field label="App version" hint="Shown here and in the About dialog.">
-        <div className="text-sm text-muted-foreground">NexusCraft Studio v{appVersion}</div>
+        <div className="text-sm text-muted-foreground">VOXEL v{appVersion}</div>
       </Field>
 
       <Field

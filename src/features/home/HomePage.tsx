@@ -120,7 +120,7 @@ export function HomePage() {
           <NexusMark className="h-20 w-20 drop-shadow-[0_0_28px_rgba(139,92,246,0.45)]" />
           <div>
             <h1 className="text-4xl font-bold tracking-tight">
-              NexusCraft{" "}
+              VOXEL{" "}
               <span className="text-brand-gradient">Studio</span>
             </h1>
             <p className="mt-3 text-sm font-medium tracking-wide text-muted-foreground">
@@ -289,7 +289,7 @@ export function HomePage() {
                 ok={true}
                 label="Platform"
                 value={env ? `${env.os} · ${env.arch}` : "…"}
-                hint="NexusCraft runs fully on your machine"
+                hint="VOXEL runs fully on your machine"
               />
             </CardContent>
           </Card>

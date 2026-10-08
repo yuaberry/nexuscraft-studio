@@ -1,5 +1,5 @@
 /**
- * Shader Studio — 32 iconic looks as NexusCraft style presets.
+ * Shader Studio — 32 iconic looks as VOXEL style presets.
  *
  * Presets tune our own generated composite pass (Iris/OptiFire-compatible)
  * to evoke famous community shaderpacks. Every card previews live via
@@ -98,7 +98,7 @@ export function ShadersPage() {
   );
 
   // Default pack name follows the selected style unless the user typed one
-  const effectivePackName = packName ?? `NexusCraft ${style.name}`;
+  const effectivePackName = packName ?? `VOXEL ${style.name}`;
 
   const refresh = useCallback(async () => {
     try {
@@ -210,7 +210,7 @@ export function ShadersPage() {
         <h1 className="text-2xl font-bold tracking-tight">Shader Studio</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           32 iconic looks as style presets — every pack is 100% original
-          NexusCraft GLSL (Iris / OptiFire compatible), previewed live before
+          VOXEL GLSL (Iris / OptiFire compatible), previewed live before
           you create it.
         </p>
         <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground/60">

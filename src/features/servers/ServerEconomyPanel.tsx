@@ -104,7 +104,7 @@ export function ServerEconomyPanel({ server, basePath }: Props) {
           // insufficient or error — tell the player in-game
           await sendServerCommand(
             server.slug,
-            `tellraw ${intent.player} [{"text":"[NexusCoin] ","color":"#f87171"},{"text":"insufficient balance or market error","color":"gray"}]`,
+            `tellraw ${intent.player} [{"text":"[VoxelCoin] ","color":"#f87171"},{"text":"insufficient balance or market error","color":"gray"}]`,
           ).catch(() => {});
         }
       }
@@ -115,7 +115,7 @@ export function ServerEconomyPanel({ server, basePath }: Props) {
   const handleInit = async () => {
     setBusy(true);
     try {
-      await initLedger(basePath, server.slug, "NexusCoin");
+      await initLedger(basePath, server.slug, "VoxelCoin");
       toast.success("Token chain initialized", { description: "Genesis block created." });
       void refresh();
     } catch (error) {

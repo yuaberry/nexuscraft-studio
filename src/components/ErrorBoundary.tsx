@@ -18,7 +18,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[NexusCraft] UI crash:", error, info.componentStack);
+    console.error("[VOXEL] UI crash:", error, info.componentStack);
   }
 
   render() {
@@ -37,7 +37,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
             {this.state.error.message}
           </pre>
           <Button variant="gradient" onClick={() => window.location.reload()}>
-            <RotateCcw className="h-4 w-4" /> Reload NexusCraft
+            <RotateCcw className="h-4 w-4" /> Reload VOXEL
           </Button>
         </div>
       );

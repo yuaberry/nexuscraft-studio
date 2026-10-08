@@ -178,7 +178,7 @@ export function CommandPalette() {
                 />
                 <PaletteItem
                   icon={Info}
-                  label="About NexusCraft Studio"
+                  label="About VOXEL"
                   onSelect={() => {
                     setOpen(false);
                     setAboutOpen(true);

@@ -33,7 +33,7 @@ export function toPascalCase(modId: string): string {
 
 export function defaultPackageFor(modId: string): string {
   const clean = modId.replace(/_/g, "");
-  return `com.nexuscraft.${clean}`;
+  return `com.voxel.${clean}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,7 +144,7 @@ export async function deleteProjectFromDisk(
 }
 
 // ---------------------------------------------------------------------------
-// Nexus Agent tool wrappers (Phase 3)
+// VOXEL Agent tool wrappers (Phase 3)
 // ---------------------------------------------------------------------------
 
 export interface EditFileResult {

@@ -6,7 +6,8 @@
 //! - `shaders_create_pack` — writes the generated files under
 //!   `shaderpacks/<slug>/`, one pack per slug, traversal-guarded via the
 //!   shared `validated_path` with a strict extension allowlist.
-//! - `shaders_list_packs` — reads the `nexuscraft.json` manifest each
+//! - `shaders_list_packs` — reads the `voxel.json` manifest each
+//!   (legacy packs carry `nexuscraft.json` — read as fallback).
 //!   generated pack carries.
 //! - `shaders_install_pack` — copies a pack into an instance's
 //!   `shaderpacks/` folder (the launcher already bootstraps that folder).
@@ -130,7 +131,7 @@ pub fn shaders_create_pack(
     // Parent (`shaderpacks/`) exists via ensure_storage_dirs; the pack root
     // itself is created here, validated by the shared guard.
     let pack_root = validated_path(&base_path, &pack_root_rel, true)?;
-    if pack_root.join("nexuscraft.json").exists() {
+    if pack_root.join("voxel.json").exists() || pack_root.join("nexuscraft.json").exists() {
         return Err("Shaderpack already exists".to_string());
     }
     std::fs::create_dir_all(&pack_root).map_err(|e| format!("{e}"))?;
@@ -150,8 +151,11 @@ pub fn shaders_create_pack(
     // The manifest declares the metadata consumed by `shaders_list_packs`.
     let manifest: &ShaderPackFile = files
         .iter()
-        .find(|f| f.path.trim_start_matches('/') == "nexuscraft.json")
-        .ok_or_else(|| "Pack manifest nexuscraft.json is required".to_string())?;
+        .find(|f| {
+            let p = f.path.trim_start_matches('/');
+            p == "voxel.json" || p == "nexuscraft.json"
+        })
+        .ok_or_else(|| "Pack manifest voxel.json is required".to_string())?;
     let manifest_value: serde_json::Value =
         serde_json::from_str(&manifest.content).map_err(|e| format!("manifest parse: {e}"))?;
     let name = manifest_value
@@ -193,7 +197,12 @@ pub fn shaders_list_packs(base_path: String) -> Result<Vec<ShaderPackInfo>, Stri
         if validate_pack_slug(&slug).is_err() {
             continue; // not one of ours
         }
-        let manifest = entry.path().join("nexuscraft.json");
+        let manifest = entry
+            .path()
+            .join("voxel.json")
+            .exists()
+            .then(|| entry.path().join("voxel.json"))
+            .unwrap_or_else(|| entry.path().join("nexuscraft.json"));
         let Ok(raw) = std::fs::read_to_string(&manifest) else {
             continue;
         };
@@ -296,7 +305,7 @@ mod tests {
 
     fn manifest(name: &str, style: &str) -> ShaderPackFile {
         ShaderPackFile {
-            path: "nexuscraft.json".into(),
+            path: "voxel.json".into(),
             content: format!(
                 r#"{{"name":"{name}","styleId":"{style}","createdAt":"2026-10-02T00:00:00Z"}}"#
             ),
@@ -388,7 +397,7 @@ mod tests {
         // Packs are immutable — a second create over the same slug is refused
         let second = shaders_create_pack(args, "dup-pack".into(), glsl_files());
         assert!(second.is_err());
-        assert!(base.join("shaderpacks/dup-pack/nexuscraft.json").is_file());
+        assert!(base.join("shaderpacks/dup-pack/voxel.json").is_file());
         assert_eq!(
             std::fs::read_to_string(base.join("shaderpacks/dup-pack/shaders/composite.fsh"))
                 .unwrap(),

@@ -1,5 +1,5 @@
 /**
- * NexusCraft Studio — website interactions.
+ * VOXEL — website interactions.
  * Data below (shader swatches, download links) mirrors the real app:
  * swatch colors come straight from src/services/shaders/shaderStyleCatalog.ts.
  */
@@ -7,13 +7,13 @@
 (() => {
   "use strict";
 
-  const REPO = "yuaberry/nexuscraft-studio";
-  const VERSION = "0.1.2";
+  const REPO = "yuaberry/voxel";
+  const VERSION = "0.2.0";
   const RELEASE_BASE = `https://github.com/${REPO}/releases/download/v${VERSION}/`;
   const ALL_RELEASES = `https://github.com/${REPO}/releases`;
-  // Tauri bundle naming: productName sanitized to "NexusCraft.Studio"
+  // Tauri bundle naming: productName sanitized to "VOXEL.Studio"
   // (confirmed against the published release assets).
-  const PKG = "NexusCraft.Studio";
+  const PKG = "VOXEL.Studio";
 
   const DOWNLOADS = {
     windows: [

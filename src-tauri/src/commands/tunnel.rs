@@ -70,7 +70,7 @@ pub fn tunnel_setup(base_path: String) -> Result<TunnelSetup, String> {
     // Official source: the playit-cloud/playit-agent GitHub releases
     let response = shared_client()
         .get("https://api.github.com/repos/playit-cloud/playit-agent/releases/latest")
-        .header("User-Agent", "nexuscraft-studio")
+        .header("User-Agent", "voxel")
         .send()
         .map_err(|e| format!("GitHub API unreachable: {e}"))?;
     if !response.status().is_success() {

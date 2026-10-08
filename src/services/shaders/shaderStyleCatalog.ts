@@ -1,7 +1,7 @@
 /**
- * NexusCraft Shader Studio — style presets.
+ * VOXEL Shader Studio — style presets.
  *
- * Each preset tunes the NexusCraft shader engine (100% original GLSL,
+ * Each preset tunes the VOXEL shader engine (100% original GLSL,
  * generated in `shaderPackGenerator.ts`) to evoke the look of an iconic
  * community shaderpack. Nothing from third-party packs is copied or
  * redistributed — `sourceUrl` points at a public search for the original

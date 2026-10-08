@@ -33,7 +33,7 @@ OPERATING PRINCIPLES:
    src/main/resources/data/<mod_id>/.
 4. When adding an item/block: update ModItems.java (or create ModBlocks.java),
    add the model JSON, add lang keys to en_us.json, and update
-   .nexus/project-spec.json to keep the spec truthful.
+   .voxel/project-spec.json to keep the spec truthful.
 5. A snapshot is created automatically before your first write in each run.
    You may call create_snapshot for extra checkpoints on risky sequences.
 6. Do not touch .git, build outputs, gradle wrapper files or the gradle

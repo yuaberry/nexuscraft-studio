@@ -69,7 +69,7 @@ export function InspectorPanel({
       toast.success(
         `Imported ${paths.length} reference${paths.length === 1 ? "" : "s"}`,
         {
-          description: "Stored under .nexus/references/ — versioned with the project.",
+          description: "Stored under .voxel/references/ — versioned with the project.",
         },
       );
     } catch (error) {

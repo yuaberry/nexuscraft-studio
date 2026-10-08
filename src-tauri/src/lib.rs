@@ -1,4 +1,4 @@
-//! NexusCraft Studio — Rust core.
+//! VOXEL — Rust core.
 //!
 //! Security authority of the application: every filesystem, process and
 //! secret operation goes through commands declared here. The frontend
@@ -106,5 +106,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running NexusCraft Studio");
+        .expect("error while running VOXEL");
 }

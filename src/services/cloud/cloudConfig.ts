@@ -1,7 +1,7 @@
 /**
  * Cloud backend configuration — OPTIONAL layer.
  *
- * NexusCraft Studio is local-first by design: everything works offline with
+ * VOXEL is local-first by design: everything works offline with
  * zero cloud. Supabase enters the architecture as a FUTURE optional layer
  * (project sync, marketplace, collaboration) — Phase 7+.
  *

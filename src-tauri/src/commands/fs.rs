@@ -2,7 +2,7 @@
 //!
 //! Every command takes the storage `base_path` plus a **relative** path and
 //! resolves the target inside the base — `..` components, absolute targets and
-//! symlink escapes are rejected. This is the same guard the Nexus Agent will
+//! symlink escapes are rejected. This is the same guard the VOXEL Agent will
 //! inherit in Phase 3.
 
 use serde::Serialize;
@@ -381,7 +381,7 @@ mod tests {
 }
 
 // ---------------------------------------------------------------------------
-// Nexus Agent tools (Phase 3) — surgical edits and project-wide search.
+// VOXEL Agent tools (Phase 3) — surgical edits and project-wide search.
 // ---------------------------------------------------------------------------
 
 #[derive(Serialize, Clone)]

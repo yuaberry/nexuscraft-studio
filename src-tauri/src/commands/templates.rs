@@ -164,9 +164,9 @@ mod tests {
             mod_id_class: "DarkKingdom".to_string(),
             mod_name: "Dark Kingdom".to_string(),
             slug: "dark-kingdom".to_string(),
-            package: "com.nexuscraft.darkkingdom".to_string(),
+            package: "com.voxel.darkkingdom".to_string(),
             package_path: "com/nexuscraft/darkkingdom".to_string(),
-            entrypoint_class: "com.nexuscraft.darkkingdom.DarkKingdom".to_string(),
+            entrypoint_class: "com.voxel.darkkingdom.DarkKingdom".to_string(),
             author: "Test Author".to_string(),
             description: "A test mod".to_string(),
             license: "MIT".to_string(),
@@ -191,7 +191,7 @@ mod tests {
         let out = render_string(&tokens, input);
         assert_eq!(
             out,
-            "id=dark_kingdom class=DarkKingdom pkg=com.nexuscraft.darkkingdom entry=com.nexuscraft.darkkingdom.DarkKingdom name=Dark Kingdom"
+            "id=dark_kingdom class=DarkKingdom pkg=com.voxel.darkkingdom entry=com.voxel.darkkingdom.DarkKingdom name=Dark Kingdom"
         );
     }
 
@@ -215,7 +215,7 @@ mod tests {
         let java = dst.join("src/main/java/com/nexuscraft/darkkingdom/DarkKingdom.java");
         assert!(java.is_file(), "entrypoint must exist at package path");
         let content = fs::read_to_string(&java).unwrap();
-        assert!(content.contains("package com.nexuscraft.darkkingdom;"));
+        assert!(content.contains("package com.voxel.darkkingdom;"));
         assert!(content.contains("dark_kingdom"));
 
         // Asset dir renamed by mod id
@@ -223,7 +223,7 @@ mod tests {
 
         // Gradle properties rendered
         let props = fs::read_to_string(dst.join("gradle.properties")).unwrap();
-        assert!(props.contains("maven_group=com.nexuscraft.darkkingdom"));
+        assert!(props.contains("maven_group=com.voxel.darkkingdom"));
         assert!(props.contains("archives_base_name=dark-kingdom"));
         assert!(props.contains("minecraft_version=1.20.1"));
         assert!(props.contains("yarn_mappings=1.20.1+build.10"));
@@ -236,8 +236,8 @@ mod tests {
         assert!(gradle.contains("JavaVersion.VERSION_17"));
         assert!(gradle.contains("mappings \"net.fabricmc:yarn:1.20.1+build.10:v2\""));
 
-        // .nexus project spec embedded + valid JSON with numeric java_release
-        let spec_raw = fs::read_to_string(dst.join(".nexus/project-spec.json")).unwrap();
+        // .voxel project spec embedded + valid JSON with numeric java_release
+        let spec_raw = fs::read_to_string(dst.join(".voxel/project-spec.json")).unwrap();
         let spec: serde_json::Value = serde_json::from_str(&spec_raw).unwrap();
         assert_eq!(spec["minecraft_version"], "1.20.1");
         assert_eq!(spec["build_configuration"]["java_release"], 17);

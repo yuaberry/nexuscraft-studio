@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NexusCraft Studio — premium app icon (v2).
+"""VOXEL — premium app icon (v2).
 
 Design: the nexus mark (three-facet isometric cube) floating over a deep
 space-blue backdrop with radial glow — same identity as the brand SVG,

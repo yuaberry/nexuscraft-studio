@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the NexusCraft Studio app icon (1024x1024 PNG).
+"""Generate the VOXEL app icon (1024x1024 PNG).
 
 Design: isometric voxel cube (nexus) with violet/blue/cyan identity,
 soft glow, on a dark graphite rounded-square backdrop.

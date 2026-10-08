@@ -73,7 +73,7 @@ pub fn create_project(payload: CreateProjectPayload) -> Result<CreateProjectResu
     }
     if !valid_package(&payload.package) {
         return Err(
-            "Invalid Java package: segments of lowercase letters/digits/underscores, e.g. com.nexuscraft.example"
+            "Invalid Java package: segments of lowercase letters/digits/underscores, e.g. com.voxel.example"
                 .to_string(),
         );
     }
@@ -149,7 +149,7 @@ pub fn create_project(payload: CreateProjectPayload) -> Result<CreateProjectResu
     // Initialize the project's git repository (snapshot backbone, AD-7).
     // Errors propagate — a project without git is not a valid project.
     let author = if payload.author.trim().is_empty() {
-        "NexusCraft Studio".to_string()
+        "VOXEL".to_string()
     } else {
         payload.author.trim().to_string()
     };
@@ -178,7 +178,7 @@ mod tests {
             template: "fabric-1.20.1-mod".to_string(),
             mod_id: "dark_kingdom".to_string(),
             mod_id_class: "DarkKingdom".to_string(),
-            package: "com.nexuscraft.darkkingdom".to_string(),
+            package: "com.voxel.darkkingdom".to_string(),
             description: "A dark medieval RPG mod".to_string(),
             license: "MIT".to_string(),
             author: "Test Author".to_string(),
@@ -218,7 +218,7 @@ mod tests {
         let project_dir = std::path::PathBuf::from(&result.project_path);
         assert!(project_dir.join("build.gradle").is_file());
         assert!(project_dir
-            .join("src/main/java/com/nexuscraft/darkkingdom/DarkKingdom.java")
+            .join("src/main/java/com/voxel/darkkingdom/DarkKingdom.java")
             .is_file());
         assert!(project_dir.join(".git").is_dir(), "git repo must exist");
         assert!(result.files_created >= 16);
@@ -244,7 +244,7 @@ mod e2e_tests {
     #[ignore = "e2e: downloads Gradle + Loom + deps (network; ~10 min on first run)"]
     fn e2e_gradle_build_compiles_template() {
         let home = std::env::var("HOME").expect("HOME is set");
-        let base = std::path::PathBuf::from(&home).join("NexusCraft");
+        let base = std::path::PathBuf::from(&home).join("VOXEL");
         std::fs::create_dir_all(&base).unwrap();
         let base_str = base.to_string_lossy().to_string();
 
@@ -259,7 +259,7 @@ mod e2e_tests {
             template: "fabric-1.20.1-mod".to_string(),
             mod_id: "dark_kingdom".to_string(),
             mod_id_class: "DarkKingdom".to_string(),
-            package: "com.nexuscraft.darkkingdom".to_string(),
+            package: "com.voxel.darkkingdom".to_string(),
             description: "E2E acceptance build".to_string(),
             license: "MIT".to_string(),
             author: "NexusCraft E2E".to_string(),

@@ -14,7 +14,7 @@ use tauri::{AppHandle, Manager};
 
 use serde::Serialize;
 
-const KEYRING_SERVICE: &str = "nexuscraft-studio";
+const KEYRING_SERVICE: &str = "voxel";
 const PROBE_KEY: &str = "__backend_probe__";
 
 #[derive(Serialize, Clone, Copy, PartialEq, Eq)]

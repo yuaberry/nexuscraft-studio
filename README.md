@@ -1,17 +1,17 @@
-# NexusCraft Studio
+# VOXEL
 
-[![CI](https://github.com/yuaberry/nexuscraft-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/yuaberry/nexuscraft-studio/actions/workflows/ci.yml)
-[![Release](https://github.com/yuaberry/nexuscraft-studio/actions/workflows/release.yml/badge.svg)](https://github.com/yuaberry/nexuscraft-studio/releases)
+[![CI](https://github.com/yuaberry/voxel/actions/workflows/ci.yml/badge.svg)](https://github.com/yuaberry/voxel/actions/workflows/ci.yml)
+[![Release](https://github.com/yuaberry/voxel/actions/workflows/release.yml/badge.svg)](https://github.com/yuaberry/voxel/releases)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-8b5cf6)
 
-> **Imagine it. Describe it. Build it. Play it.**
-> AI Minecraft Creation Studio
+> **Imagine. Create. Build. Play.**
+> AI-Powered Creation Platform
 
-**[🌐 Site oficial](https://yuaberry.github.io/nexuscraft-studio/)** ·
-**[⬇️ Downloads (v0.1.1)](https://github.com/yuaberry/nexuscraft-studio/releases/latest)** —
+**[🌐 Site oficial](https://yuaberry.github.io/voxel/)** ·
+**[⬇️ Downloads (v0.2.0)](https://github.com/yuaberry/voxel/releases/latest)** —
 Windows `.exe`/`.msi` · Linux `.deb`/`.AppImage` · macOS `.dmg` (Apple Silicon + Intel)
 
-NexusCraft Studio é uma plataforma desktop de criação assistida por IA para Minecraft Java Edition. **O MVP está completo e provado de ponta a ponta**: descreva um mod em linguagem natural, compile-o de verdade com Gradle, corrija erros com um agente sandboxado, rode o Minecraft com o seu jar instalado, monte servidores com economia própria e publique o projeto no GitHub.
+VOXEL é uma plataforma desktop de criação assistida por IA para Minecraft Java Edition. **O MVP está completo e provado de ponta a ponta**: descreva um mod em linguagem natural, compile-o de verdade com Gradle, corrija erros com um agente sandboxado, rode o Minecraft com o seu jar instalado, monte servidores com economia própria e publique o projeto no GitHub.
 
 ```
 NO FAKE DATA — cada tela mostra apenas o que funciona.
@@ -55,14 +55,14 @@ pnpm verify           # typecheck + lint + testes + build
 
 Fluxo completo em 4 passos (primeira vez):
 
-1. **Settings → AI** — configure provider, key (vai para o keyring) e modelo; **Settings → Storage** — escolha a pasta do workspace (`~/NexusCraft`)
+1. **Settings → AI** — configure provider, key (vai para o keyring) e modelo; **Settings → Storage** — escolha a pasta do workspace (`~/VOXEL`)
 2. O **Dark Kingdom** nasce automaticamente como exemplo — abra o workspace e pressione **Build** (cache Gradle compartilhado; primeira build baixa dependências)
 3. **AI Creator (Agent mode)** — *"add a Voidcutter sword: item, model, lang and recipe"* — o agente edita os arquivos com auditoria e snapshot
 4. **Run** — instância isolada preparada com arquivos oficiais → Minecraft abre com o seu mod (requer Microsoft sign-in uma vez: Settings → Launcher)
 
 Para **estilos visuais**: aba **Shaders** — escolha entre 32 presets (BSL, SEUS, Complementary Reimagined, Solas…) com preview WebGL ao vivo → Create → Install na instância → ative no Iris/OptiFire. Cada preset gera GLSL 100% original; nada é copiado dos originais.
 
-Para **jogadores de servidor**: aba **Servers** → wizard (vanilla/Paper, versão do catálogo ao vivo) → módulos misturáveis (Economia/Prison/Token Chain) → console em tempo real, NexusCoin com ledger verificável, backups, túnel público e restore.
+Para **jogadores de servidor**: aba **Servers** → wizard (vanilla/Paper, versão do catálogo ao vivo) → módulos misturáveis (Economia/Prison/Token Chain) → console em tempo real, VoxelCoin com ledger verificável, backups, túnel público e restore.
 
 Para **publicar**: workspace → **Publish** → commit + repo GitHub + push.
 
@@ -91,7 +91,7 @@ Decisões-chave no [`docs/architecture.md`](docs/architecture.md) (AD-1..AD-11 +
 - Tokens: OS keyring; push GitHub usa header transitório que nunca toca o disco
 - Sandbox: toda operação de arquivos passa pelo path guard Rust; shell arbitrário é proibido por design
 - Shader style presets evocam looks da comunidade com **GLSL 100% original** — nada copiado, creditos e busca pelo original dentro do app
-- **NexusCraft Studio is an independent third-party tool and is not affiliated with Mojang Studios or Microsoft.**
+- **VOXEL is an independent third-party creation platform and is not affiliated with Mojang Studios or Microsoft.**
 
 ## Testes (todos executados)
 

@@ -45,7 +45,7 @@ export function SecuritySettings() {
     <section>
       <SectionHeader
         title="Security"
-        description="How NexusCraft protects credentials on this machine."
+        description="How VOXEL protects credentials on this machine."
       />
 
       <Field
@@ -93,7 +93,7 @@ export function SecuritySettings() {
 
       <Field
         label="Agent sandbox (Phases 3–4)"
-        hint="Architecture commitments for the Nexus Agent."
+        hint="Architecture commitments for the VOXEL Agent."
       >
         <ul className="max-w-md list-disc space-y-1.5 pl-5 text-xs leading-relaxed text-muted-foreground">
           <li>
@@ -119,7 +119,7 @@ export function SecuritySettings() {
           <DialogHeader>
             <DialogTitle>Clear all stored secrets?</DialogTitle>
             <DialogDescription>
-              This permanently removes every API key stored by NexusCraft Studio.
+              This permanently removes every API key stored by VOXEL.
               Features using them will stop working until you re-enter the keys.
             </DialogDescription>
           </DialogHeader>

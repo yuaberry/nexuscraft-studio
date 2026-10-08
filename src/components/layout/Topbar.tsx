@@ -28,7 +28,7 @@ const ROUTE_LABELS: Array<{ pattern: RegExp; label: string }> = [
 ];
 
 function currentBreadcrumb(pathname: string): string {
-  return ROUTE_LABELS.find((r) => r.pattern.test(pathname))?.label ?? "NexusCraft";
+  return ROUTE_LABELS.find((r) => r.pattern.test(pathname))?.label ?? "VOXEL";
 }
 
 export function Topbar() {

@@ -72,9 +72,9 @@ export default function App() {
             modIdClass: "DarkKingdom",
             package: defaultPackageFor("dark_kingdom"),
             description:
-              "The NexusCraft example project — a dark medieval sword, recipe and advancement to build upon.",
+              "The VOXEL example project — a dark medieval sword, recipe and advancement to build upon.",
             license: settings.general.defaultLicense,
-            author: settings.general.authorName || "NexusCraft",
+            author: settings.general.authorName || "VOXEL",
             ...templateParamsToPayload(params),
           });
           projectPath = result.projectPath;
@@ -97,7 +97,7 @@ export default function App() {
           minecraft_version: params.minecraftVersion,
           loader: "fabric" as const,
           description:
-            "The NexusCraft example project — a dark medieval sword, recipe and advancement to build upon.",
+            "The VOXEL example project — a dark medieval sword, recipe and advancement to build upon.",
           license: settings.general.defaultLicense,
           path: projectPath,
           repository_url: null,
@@ -177,7 +177,7 @@ function SplashScreen() {
         </svg>
       </div>
       <div className="text-sm font-medium tracking-[0.3em] text-muted-foreground">
-        NEXUSCRAFT
+        VOXEL
       </div>
     </div>
   );

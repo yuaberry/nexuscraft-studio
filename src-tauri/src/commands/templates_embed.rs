@@ -17,16 +17,36 @@ pub const FABRIC_1201_TEMPLATE: &[EmbeddedFile] = &[
         bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.gitignore"),
     },
     EmbeddedFile {
-        path: ".nexus/ai-memory.md",
-        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.nexus/ai-memory.md"),
+        path: ".voxel/ai-memory.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/ai-memory.md"),
     },
     EmbeddedFile {
-        path: ".nexus/project-spec.json",
-        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.nexus/project-spec.json"),
+        path: ".voxel/architecture.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/architecture.md"),
     },
     EmbeddedFile {
-        path: ".nexus/style-bible.md",
-        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.nexus/style-bible.md"),
+        path: ".voxel/asset-index.json",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/asset-index.json"),
+    },
+    EmbeddedFile {
+        path: ".voxel/decisions.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/decisions.md"),
+    },
+    EmbeddedFile {
+        path: ".voxel/gameplay-bible.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/gameplay-bible.md"),
+    },
+    EmbeddedFile {
+        path: ".voxel/lore-bible.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/lore-bible.md"),
+    },
+    EmbeddedFile {
+        path: ".voxel/project-spec.json",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/project-spec.json"),
+    },
+    EmbeddedFile {
+        path: ".voxel/style-bible.md",
+        bytes: include_bytes!("../../templates/fabric-1.20.1-mod/.voxel/style-bible.md"),
     },
     EmbeddedFile {
         path: "build.gradle",

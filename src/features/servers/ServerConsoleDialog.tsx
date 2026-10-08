@@ -128,7 +128,7 @@ export function ServerConsoleDialog({ server, basePath, onClose }: Props) {
       ) {
         toast.warning("Heads up: Java 21 with MC 1.20.x", {
           description:
-            "1.20.x officially targets Java 17 — shutdown may hang on Java 21. If \"stop\" takes over 30s, NexusCraft force-stops it automatically. A Java 17 path can be set in Settings → Java.",
+            "1.20.x officially targets Java 17 — shutdown may hang on Java 21. If \"stop\" takes over 30s, VOXEL force-stops it automatically. A Java 17 path can be set in Settings → Java.",
           duration: 9000,
         });
       }

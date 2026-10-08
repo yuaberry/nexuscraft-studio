@@ -86,7 +86,7 @@ async function turnOpenAiCompatible(
     `${base}/chat/completions`,
     {
       Authorization: `Bearer ${apiKey}`,
-      ...(settings.provider === "openrouter" ? { "X-Title": "NexusCraft Studio" } : {}),
+      ...(settings.provider === "openrouter" ? { "X-Title": "VOXEL" } : {}),
     },
     {
       model: settings.model,

@@ -1,4 +1,4 @@
-# Plan.md — NEXUSCRAFT STUDIO · Documento-Mãe de Continuidade
+# Plan.md — VOXEL STUDIO · Documento-Mãe de Continuidade
 
 > **⚡ AI Minecraft Creation Studio** — o usuário descreve em linguagem natural; o agente opera sobre um projeto REAL (arquivos, código, build, launcher, servidores, GitHub) com sandbox e auditoria. Nada de fake data — nunca.
 >
@@ -12,7 +12,7 @@
 
 | Campo | Valor |
 |---|---|
-| Nome | NexusCraft Studio · curto: NexusCraft |
+| Nome | VOXEL · curto: VOXEL |
 | Tagline | "Imagine it. Describe it. Build it. Play it." |
 | Descrição | AI Minecraft Creation Studio |
 | Repo local | `~/nexuscraft-studio` (branch `main`) |
@@ -99,7 +99,7 @@ src-tauri/templates/fabric-1.20.1-mod/
 src-tauri/capabilities/default.json  # ACL: sql, dialog, http (AI providers + Mojang + Fabric + Paper + MSA + GitHub)
 ```
 
-**Workspace do usuário**: `~/NexusCraft/{projects,instances,servers,backups,logs,shaderpacks,.gradle-cache,minecraft,tunnel}` — basePath configurável em Settings→Storage. DB: `~/.config/dev.yuadevs.nexuscraft-studio/nexuscraft.db`.
+**Workspace do usuário**: `~/VOXEL/{projects,instances,servers,backups,logs,shaderpacks,.gradle-cache,minecraft,tunnel}` — basePath configurável em Settings→Storage. DB: `~/.config/dev.yuadevs.nexuscraft-studio/nexuscraft.db`.
 
 ## 4. Como cada sistema funciona (arquitetura funcional)
 
@@ -350,7 +350,7 @@ git log --oneline                   # 25+ commits
 - **Repo tornado PÚBLICO** (decisão implícita do pedido: downloads públicos; `gh repo edit --visibility public`) — description + homepage atualizadas
 - **HomePage do app**: linha de stats reais do workspace (projetos/shaderpacks/servers/instâncias — dados vivos, tiles clicáveis)
 - **README refresh**: badges CI/Release, links do site e downloads, tabela com Wave 1+2, números reais (46 testes)
-- **Nomes REAIS dos assets** (o tauri sanitiza espaços do productName para PONTO): `NexusCraft.Studio_0.1.1_{arch}…` — confirmado contra a release parcial e corrigido no main.js
+- **Nomes REAIS dos assets** (o tauri sanitiza espaços do productName para PONTO): `VOXEL.Studio_0.1.1_{arch}…` — confirmado contra a release parcial e corrigido no main.js
 
 **Re-tag**: a 1ª tentativa v0.1.1 publicou 6 assets (macOS aarch64/x64 .dmg+.app.tar.gz, Linux .deb/.AppImage) mas faltou Windows → release+tag deletadas e re-tagged no commit do cross-env para uma release íntegra de um único commit.
 
@@ -359,7 +359,7 @@ git log --oneline                   # 25+ commits
 - Repo: https://github.com/yuaberry/nexuscraft-studio (público)
 - Downloads: https://github.com/yuaberry/nexuscraft-studio/releases/latest
 
-**Verificação da sessão**: typecheck ✓ · lint 0 errors ✓ · vitest 28/28 ✓ · cargo 18/18 ✓ · vite build (cross-env) ✓ · CI main ✓ · Pages deploy ✓ · site validado por DOM dump ✓ · **Release v0.1.1: SUCCESS** — 4 jobs verdes (macOS arm64 7m45s, macOS x64 5m32s, Ubuntu 4m29s, Windows), **8 assets publicados e validados por HTTP 206**: `NexusCraft.Studio_0.1.1_x64-setup.exe` (9.3MB) + `.msi` (11.9MB) · `.deb` (13.5MB) + `.AppImage` (87.4MB) · `.dmg` aarch64 (12.8MB) + x64 (13.3MB) + 2× `.app.tar.gz`.
+**Verificação da sessão**: typecheck ✓ · lint 0 errors ✓ · vitest 28/28 ✓ · cargo 18/18 ✓ · vite build (cross-env) ✓ · CI main ✓ · Pages deploy ✓ · site validado por DOM dump ✓ · **Release v0.1.1: SUCCESS** — 4 jobs verdes (macOS arm64 7m45s, macOS x64 5m32s, Ubuntu 4m29s, Windows), **8 assets publicados e validados por HTTP 206**: `VOXEL.Studio_0.1.1_x64-setup.exe` (9.3MB) + `.msi` (11.9MB) · `.deb` (13.5MB) + `.AppImage` (87.4MB) · `.dmg` aarch64 (12.8MB) + x64 (13.3MB) + 2× `.app.tar.gz`.
 
 ---
 

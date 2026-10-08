@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "NexusCraft Studio",
-  "version": "0.1.2",
+  "productName": "VOXEL",
+  "version": "0.2.0",
   "identifier": "dev.yuadevs.nexuscraft-studio",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -13,7 +13,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "NexusCraft Studio",
+        "title": "VOXEL",
         "width": 1440,
         "height": 900,
         "minWidth": 1000,

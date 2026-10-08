@@ -173,7 +173,7 @@ export function ImportServerPanel({ onApplyPreset }: ImportServerPanelProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Paste a server address (or link) — NexusCraft performs the same
+            Paste a server address (or link) — VOXEL performs the same
             handshake every launcher does and pulls live MOTD, version,
             players and icon. Then recreate that vibe locally as a styled
             preset, or let Nexus AI design one from the real data.
