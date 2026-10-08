@@ -162,16 +162,26 @@ function NavItemButton({ item, collapsed }: { item: NavItem; collapsed: boolean 
       end={item.to === "/"}
       className={({ isActive }) =>
         cn(
-          "group flex items-center rounded-md px-3 py-2 text-sm transition-colors",
+          "group relative flex items-center rounded-lg px-3 py-2 text-sm transition-all",
           collapsed && "justify-center px-2",
           isActive
-            ? "bg-primary/10 text-primary"
+            ? "bg-primary/12 text-primary"
             : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
         )
       }
     >
-      <Icon className="h-4 w-4" />
-      {!collapsed && <span className="ml-3">{item.label}</span>}
+      {({ isActive }) => (
+        <>
+          {isActive && (
+            <span
+              className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
+              aria-hidden="true"
+            />
+          )}
+          <Icon className="h-4 w-4" />
+          {!collapsed && <span className="ml-3">{item.label}</span>}
+        </>
+      )}
     </NavLink>
   );
 

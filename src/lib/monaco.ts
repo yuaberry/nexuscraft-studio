@@ -46,7 +46,7 @@ import tsWorker from "monaco-editor/language/typescript/ts.worker.js?worker";
 
 loader.config({ monaco });
 
-const NEXUS_DARK: monaco.editor.IStandaloneThemeData = {
+const VOXEL_DARK: monaco.editor.IStandaloneThemeData = {
   base: "vs-dark",
   inherit: true,
   rules: [
@@ -58,18 +58,18 @@ const NEXUS_DARK: monaco.editor.IStandaloneThemeData = {
     { token: "delimiter", foreground: "64748b" },
   ],
   colors: {
-    "editor.background": "#0d1017",
+    "editor.background": "#06080e",
     "editor.foreground": "#e6e9f0",
     "editorLineNumber.foreground": "#3b4354",
     "editorLineNumber.activeForeground": "#8b5cf6",
     "editor.selectionBackground": "#8b5cf64d",
-    "editor.lineHighlightBackground": "#151926",
+    "editor.lineHighlightBackground": "#0e1220",
     "editorCursor.foreground": "#a78bfa",
-    "editorIndentGuide.background1": "#1a1f2b",
+    "editorIndentGuide.background1": "#151a28",
     "editorIndentGuide.activeBackground1": "#2d3448",
-    "editorWidget.background": "#10131a",
-    "editorWidget.border": "#232936",
-    "editorSuggestWidget.selectedBackground": "#1d222e",
+    "editorWidget.background": "#0a0d15",
+    "editorWidget.border": "#1a1f30",
+    "editorSuggestWidget.selectedBackground": "#151a2a",
     "scrollbarSlider.background": "#23293680",
     "scrollbarSlider.hoverBackground": "#2d3448aa",
   },
@@ -79,8 +79,8 @@ let themeReady = false;
 
 export function setupMonacoTheme(): void {
   if (themeReady) return;
-  monaco.editor.defineTheme("nexus-dark", NEXUS_DARK);
-  monaco.editor.setTheme("nexus-dark");
+  monaco.editor.defineTheme("voxel-dark", VOXEL_DARK);
+  monaco.editor.setTheme("voxel-dark");
   themeReady = true;
 }
 

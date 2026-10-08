@@ -163,7 +163,7 @@ export function ShaderPackEditor({ pack, basePath, onClose }: ShaderPackEditorPr
             <Editor
               key={pack?.slug ?? "none"}
               height="100%"
-              theme="nexus-dark"
+              theme="voxel-dark"
               beforeMount={() => setupMonacoTheme()}
               onMount={(editor) => registerSaveShortcut(editor, () => void save())}
               language={languageFromPath(activeFile)}

@@ -13,16 +13,16 @@ export function NexusMark({ className }: { className?: string }) {
     >
       <defs>
         <linearGradient id="nexus-top" x1="32" y1="10" x2="32" y2="30" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#a78bfa" />
-          <stop offset="1" stopColor="#8b5cf6" />
+          <stop stopColor="#b79cff" />
+          <stop offset="1" stopColor="#9155ff" />
         </linearGradient>
         <linearGradient id="nexus-left" x1="12" y1="20" x2="32" y2="52" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#3b82f6" />
-          <stop offset="1" stopColor="#2563eb" />
+          <stop stopColor="#3580f7" />
+          <stop offset="1" stopColor="#2a6bff" />
         </linearGradient>
         <linearGradient id="nexus-right" x1="52" y1="20" x2="32" y2="52" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#7c3aed" />
-          <stop offset="1" stopColor="#6d28d9" />
+          <stop stopColor="#8b3dff" />
+          <stop offset="1" stopColor="#5b21b6" />
         </linearGradient>
       </defs>
 
@@ -34,26 +34,26 @@ export function NexusMark({ className }: { className?: string }) {
       {/* Edge highlights */}
       <polyline
         points="32,10 52,20 52,42 32,52 12,42 12,20 32,10"
-        stroke="#22d3ee"
+        stroke="#3ee7fb"
         strokeOpacity="0.35"
         strokeWidth="1.5"
         fill="none"
       />
       <polyline
         points="32,30 32,52"
-        stroke="#22d3ee"
+        stroke="#3ee7fb"
         strokeOpacity="0.35"
         strokeWidth="1.5"
       />
 
       {/* Nexus nodes */}
-      <circle cx="32" cy="10" r="2.6" fill="#22d3ee" />
-      <circle cx="52" cy="20" r="2.6" fill="#22d3ee" />
-      <circle cx="12" cy="20" r="2.6" fill="#22d3ee" />
-      <circle cx="32" cy="52" r="2.6" fill="#22d3ee" />
-      <circle cx="52" cy="42" r="2.6" fill="#22d3ee" fillOpacity="0.85" />
-      <circle cx="12" cy="42" r="2.6" fill="#22d3ee" fillOpacity="0.85" />
-      <circle cx="32" cy="30" r="2.2" fill="#e0f2fe" />
+      <circle cx="32" cy="10" r="2.6" fill="#3ee7fb" />
+      <circle cx="52" cy="20" r="2.6" fill="#3ee7fb" />
+      <circle cx="12" cy="20" r="2.6" fill="#3ee7fb" />
+      <circle cx="32" cy="52" r="2.6" fill="#3ee7fb" />
+      <circle cx="52" cy="42" r="2.6" fill="#3ee7fb" fillOpacity="0.85" />
+      <circle cx="12" cy="42" r="2.6" fill="#3ee7fb" fillOpacity="0.85" />
+      <circle cx="32" cy="30" r="2.2" fill="#eaf6ff" />
     </svg>
   );
 }

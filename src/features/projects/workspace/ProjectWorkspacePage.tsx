@@ -304,7 +304,7 @@ export function ProjectWorkspacePage() {
                 language={languageFromPath(activeTab.path)}
                 value={activeTab.content}
                 onChange={onContentChange}
-                theme="nexus-dark"
+                theme="voxel-dark"
                 onMount={(editor) => {
                   editorRef.current = editor;
                   setEditorReady(true);

@@ -144,7 +144,7 @@ export function SpecPreview({
             key={`${view}-${effective.length}`}
             height="100%"
             language="json"
-            theme="nexus-dark"
+            theme="voxel-dark"
             value={effective}
             options={{
               readOnly: true,

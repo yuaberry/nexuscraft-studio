@@ -164,20 +164,30 @@ export default function App() {
 
 function SplashScreen() {
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center gap-6 bg-radial-glow">
-      <div className="animate-pulse-soft">
-        <svg viewBox="0 0 64 64" className="h-16 w-16" fill="none">
-          <polygon points="32,10 52,20 32,30 12,20" fill="#8b5cf6" />
-          <polygon points="12,20 32,30 32,52 12,42" fill="#3b82f6" />
-          <polygon points="52,20 32,30 32,52 52,42" fill="#6d28d9" />
-          <circle cx="32" cy="10" r="2.6" fill="#22d3ee" />
-          <circle cx="52" cy="20" r="2.6" fill="#22d3ee" />
-          <circle cx="12" cy="20" r="2.6" fill="#22d3ee" />
-          <circle cx="32" cy="52" r="2.6" fill="#22d3ee" />
+    <div className="relative flex h-screen w-full flex-col items-center justify-center gap-7 overflow-hidden bg-radial-glow">
+      <div className="pointer-events-none absolute inset-0 bg-blueprint-grid" aria-hidden="true" />
+      <div className="relative animate-pulse-soft">
+        <svg
+          viewBox="0 0 64 64"
+          className="h-20 w-20 drop-shadow-[0_0_36px_rgba(145,85,255,0.55)]"
+          fill="none"
+        >
+          <polygon points="32,10 52,20 32,30 12,20" fill="#9155ff" />
+          <polygon points="12,20 32,30 32,52 12,42" fill="#3580f7" />
+          <polygon points="52,20 32,30 32,52 52,42" fill="#7c3aed" />
+          <circle cx="32" cy="10" r="2.6" fill="#3ee7fb" />
+          <circle cx="52" cy="20" r="2.6" fill="#3ee7fb" />
+          <circle cx="12" cy="20" r="2.6" fill="#3ee7fb" />
+          <circle cx="32" cy="52" r="2.6" fill="#3ee7fb" />
         </svg>
       </div>
-      <div className="text-sm font-medium tracking-[0.3em] text-muted-foreground">
-        VOXEL
+      <div className="relative flex flex-col items-center gap-2">
+        <div className="text-2xl font-extrabold tracking-[0.34em] text-foreground">
+          VOXEL
+        </div>
+        <div className="text-brand-gradient text-[11px] font-semibold tracking-[0.22em]">
+          IMAGINE · CREATE · BUILD · PLAY
+        </div>
       </div>
     </div>
   );
