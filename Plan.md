@@ -1,8 +1,8 @@
-# Plan.md — VOXEL STUDIO · Documento-Mãe de Continuidade
+# Plan.md — VOXEL · Documento-Mãe de Continuidade
 
-> **⚡ AI Minecraft Creation Studio** — o usuário descreve em linguagem natural; o agente opera sobre um projeto REAL (arquivos, código, build, launcher, servidores, GitHub) com sandbox e auditoria. Nada de fake data — nunca.
+> **⚡ AI-Powered Creation Platform** — o usuário descreve em linguagem natural; o agente opera sobre um projeto REAL (arquivos, código, build, launcher, servidores, GitHub) com sandbox e auditoria. Nada de fake data — nunca.
 >
-> **Este arquivo é a memória integral do projeto.** Se o chat foi compactado: leia este documento INTEIRO, depois o `README.md` e o `docs/architecture.md`, execute o Protocolo de Retomada (§12) e só então toque em código.
+> **Este arquivo é a memória integral do projeto.** Se o chat foi compactado: leia este documento INTEIRO, depois `README.md`, `docs/PROJECT_AUDIT.md` e `docs/VOXEL_ROADMAP.md`, execute o Protocolo de Retomada (§12) e só então toque em código.
 >
 > **REGRA PERMANENTE DO DONO**: quando ele disser *"crie o arquivo Plan.md"*, gerar/atualizar este documento com o estado atual completo (sessões, decisões, riscos, roadmap) e commitar. Este arquivo é a base de continuidade pós-compactação.
 
@@ -12,18 +12,18 @@
 
 | Campo | Valor |
 |---|---|
-| Nome | VOXEL · curto: VOXEL |
-| Tagline | "Imagine it. Describe it. Build it. Play it." |
-| Descrição | AI Minecraft Creation Studio |
-| Repo local | `~/nexuscraft-studio` (branch `main`) |
-| GitHub | https://github.com/yuaberry/nexuscraft-studio (**PÚBLICO** desde a sessão 14, conta `yuaberry`) |
-| Site oficial | https://yuaberry.github.io/nexuscraft-studio/ (GitHub Pages, deploy automático por workflow) |
-| Downloads | https://github.com/yuaberry/nexuscraft-studio/releases — Windows .exe/.msi · Linux .deb/.AppImage · macOS .dmg (arm64+x64) |
+| Nome | **VOXEL** (desde a Sessão 16 — antes "NexusCraft Studio"; rebrand por briefing do dono de 115 seções) |
+| Tagline | "Imagine. Create. Build. Play." |
+| Descrição | AI-Powered Creation Platform |
+| Repo local | `~/nexuscraft-studio` (pasta local mantém o nome — histórico preservado) |
+| GitHub | https://github.com/yuaberry/voxel (**PÚBLICO**, renomeado de nexuscraft-studio na Sessão 16 com redirect automático) |
+| Site oficial | https://yuaberry.github.io/voxel/ (GitHub Pages, deploy por workflow) |
+| Downloads | https://github.com/yuaberry/voxel/releases — assets `VOXEL_<v>_*` (Windows .exe/.msi · Linux .deb/.AppImage · macOS .dmg arm64+x64) |
 | gh CLI | Autenticado (scopes: gist, read:org, repo, workflow) |
-| Release | v0.1.1 — executáveis multi-OS via tauri-action (matrix 4 jobs) |
-| Legal | "Independent third-party tool. Not affiliated with Mojang Studios or Microsoft." |
+| Legal | "VOXEL is an independent third-party creation platform and is not affiliated with Mojang Studios or Microsoft." |
 | Idioma | Prompts do dono: PT-BR · Produto/commits: inglês (README em PT-BR, site em EN) |
-| ⚠️ Sem LICENSE ainda | repo é público mas "all rights reserved" por default — site/README NÃO afirmam "open source" (honesto). Dono decide a licença depois |
+| ⚠️ Sem LICENSE ainda | repo público sem licença — site/README NÃO afirmam "open source" (honesto). Dono decide depois |
+| **IDs internos preservados** (compat) | identifier `dev.yuadevs.nexuscraft-studio`, DB `nexuscraft.db`, crate name, namespaces `nexus_*`, temp dirs de teste — **nunca renomear sem migration planejada** (audit §5 P4) |
 
 ## 2. Stack (estabelecida e funcionando — não mudar sem justificativa)
 
@@ -394,3 +394,30 @@ git log --oneline                   # 25+ commits
 ---
 
 *Última atualização: Sessão 15 — Ícone premium (51 variantes), Server List Ping real em Rust (provado contra o Hypixel ao vivo), 10 style presets, import por endereço/link com MOTD colorido + IA design + referências públicas, responsividade total (sidebar colapsável, mínimos 1000×640). v0.1.2 tagged com tudo isso. MVP + Waves 1-3 completos. Próximo: Modpack Creator, Forge/NeoForge templates ou LICENSE (§9).*
+
+---
+
+## 16. Sessão 16 — REBRAND VOXEL (Wave 4) + Auditoria + Roadmap
+
+**Pedido do dono**: briefing de 115 seções — o produto passa a se chamar oficialmente **VOXEL** ("AI-Powered Creation Platform", tagline "Imagine. Create. Build. Play."). §113: AUDITAR ANTES DE ALTERAR; §111: Fase 1 = rename + audit; §80: atualizar branding visível sem quebrar IDs internos; §104: nada de fake.
+
+**Auditoria primeiro (docs novos)**:
+- **`docs/PROJECT_AUDIT.md`** — arquitetura, stack, inventário do que funciona (com provas), placeholders honestos, dívidas P1-P7, plano incremental e riscos
+- **`docs/VOXEL_ROADMAP.md`** — briefing §111 mapeado: cobertura de hoje (40+ seções já entregues) + Fases A-F (core extraction/mobile, creation breadth, server ops, multi-agent, platform)
+- **`docs/OPENCODE.md`** — agentes (architect/builder/reviewer/debugger), gates de verificação, invariantes (§106-108)
+
+**Rebrand executado (100 arquivos analisados, replacements cirúrgicos com proteções)**:
+- UI completa: wordmark "VOXEL", splash, About, settings, agent "Nexus Agent"→"VOXEL Agent" (9 refs), legal §82, tagline/description oficiais
+- `productName: "VOXEL"` (assets passam a `VOXEL_<v>_*`) · package.json `name: "voxel"` · default Java package `com.voxel.*` para novos projetos
+- **`.voxel/` project memory** (§15-16): template bootstrapa os 8 arquivos (project-spec, ai-memory, style-bible, lore-bible, gameplay-bible, architecture, asset-index, decisions); contextService lê `.voxel` primeiro com **fallback `.nexus`** (projetos antigos como o Dark Kingdom sobrevivem); Reference Board → `.voxel/references/`; SpecPreview salva onde o spec vive (dual-path); system prompt carrega 6 contextos + menciona os outros 2
+- Shaderpack manifest → `voxel.json` com read-fallback `nexuscraft.json` (packs antigos continuam listando e editáveis)
+- Workspace default: `~/VOXEL` para novos; **`~/NexusCraft` existente é auto-detectado e mantido** (zero data loss)
+- **Repo GitHub renomeado** → `yuaberry/voxel` (redirect ativo; Pages auto-mudou para `yuaberry.github.io/voxel/`)
+- **IDs preservados por design** (audit P4 + briefing §80): identifier, DB filename, crate name, namespaces `nexus_*` (mundos existentes), migration 001 (append-only — o batch chegou a tocar um comentário; REVERTIDA)
+- Site: URLs novas, tagline, nav, PKG corrigido pós-cascata ("VOXEL.Studio" → "VOXEL")
+
+**Bugs caçados**: (1) migration 001 tocada pelo batch → revertida (append-only); (2) `com.nexuscraft` lowercase fora dos patterns do batch → varredura e fix global (tests fixtures + asserts de path); (3) teste do template quebrado com `.nexus/project-spec.json` → `.voxel/`; (4) PKG do site em cascata.
+
+**Verificação**: typecheck ✓ · lint 0 errors ✓ · vitest 44/44 ✓ · cargo 27/27 ✓ (template .voxel + com.voxel validados) · vite build 5m04s ✓ · boot vivo 0 panics ✓ · CI verde · Pages SUCCESS no novo URL (DOM validado) · release v0.2.0 em andamento no fechamento desta sessão.
+
+**Estado pós-sessão**: produto = **VOXEL 0.2.0**; todas as Waves 1-3 funcionando sob o novo nome; próximo passo natural = Fases B+ do VOXEL_ROADMAP (packages/core extraction quando mobile começar; Forge/NeoForge templates; multi-agent personas).
