@@ -393,7 +393,7 @@ git log --oneline                   # 25+ commits
 
 ---
 
-*Última atualização: Sessão 15 — Ícone premium (51 variantes), Server List Ping real em Rust (provado contra o Hypixel ao vivo), 10 style presets, import por endereço/link com MOTD colorido + IA design + referências públicas, responsividade total (sidebar colapsável, mínimos 1000×640). v0.1.2 tagged com tudo isso. MVP + Waves 1-3 completos. Próximo: Modpack Creator, Forge/NeoForge templates ou LICENSE (§9).*
+*Última atualização: Sessão 17 — VOXEL “Next” skin: reskin completo do app (tokens, aurora, voxel grid, sidebar glow, splash, Monaco voxel-dark, ícone v3) e do site, zero funcionalidade tocada — 44/44 vitest, 27/27 cargo, boot vivo. v0.3.0 tagged (release multi-OS). Próximo: Fases B+ do VOXEL_ROADMAP (mobile/packages, Forge/NeoForge, multi-agent).
 
 ---
 
@@ -421,3 +421,28 @@ git log --oneline                   # 25+ commits
 **Verificação**: typecheck ✓ · lint 0 errors ✓ · vitest 44/44 ✓ · cargo 27/27 ✓ (template .voxel + com.voxel validados) · vite build 5m04s ✓ · boot vivo 0 panics ✓ · CI verde · Pages SUCCESS no novo URL (DOM validado) · release v0.2.0 em andamento no fechamento desta sessão.
 
 **Estado pós-sessão**: produto = **VOXEL 0.2.0**; todas as Waves 1-3 funcionando sob o novo nome; próximo passo natural = Fases B+ do VOXEL_ROADMAP (packages/core extraction quando mobile começar; Forge/NeoForge templates; multi-agent personas).
+
+---
+
+## 17. Sessão 17 — VOXEL "Next" skin (reskin completo do app + site)
+
+**Pedido do dono**: "refaça o aplicativo com o nome Voxel sem desfazer nada, com um novo visual. o site também quero um novo visual." → **Reskin cirúrgico: pele nova, zero funcionalidade tocada** (briefing §8 VOXEL Design System).
+
+**App — mudanças só visuais** (`src/index.css` reescrito + componentes-chave):
+- Tokens: fundo quase-preto `#060709`, superfícies profundas, bordas mais frias, radius 0.75rem, primary violeta elétrico `#9155fff` (#9155ff), accents cyan/blue retunados
+- **Voxel grid** novo (linhas finas + nós de vértice + mask radial) e **aurora dupla** (violeta + ciano) no `bg-radial-glow`
+- Glass com profundidade real (blur 18px + saturate) e "light seam" interno nos cards
+- Scrollbar/selection/focus elétricos; `:focus-visible` global
+- Sidebar: **barra indicadora glow** no item ativo (render-prop do NavLink)
+- Splash redesenhada (mark maior com glow duplo, wordmark extrabold, tagline em brand-gradient)
+- Monaco: tema renomeado **`voxel-dark`** (5 refs atualizadas) com paleta do editor nova
+- Botões gradient: hover `brightness-110` + bloom de sombra elétrica
+- `NexusMark` (SVG) e **ícone v3** (`generate_icon_v3.py`) regenerados na paleta Next via `tauri icon` (51 variantes)
+
+**Site**: mesmos seletores/conteúdo/JS, `styles.css` inteiro re-pelado — aurora de fundo, cards com hover-glow, CTA da nav com glow, tipografia display maior, mockup interno refinado, download cards com destaque "detected" brilhante.
+
+**Nada desfeito (provas)**: vitest **44/44** ✓ · cargo **27/27** ✓ · typecheck/lint 0 errors ✓ · vite build ✓ · **boot vivo com o skin novo, 0 panics** ✓ · CI verde · Pages verde · DOM validado ao vivo (32 swatches + 6 links v0.3.0)
+
+**Publicação**: v0.3.0 (package/tauri.conf/Cargo.toml/About/site) → tag **v0.3.0** → release multi-OS com o ícone Next. Site: screenshot de validação capturado.
+
+**Decisão**: tema Monaco renomeável (interno); classes CSS mantidas por design (reskin sem tocar JSX do site); `generate_icon_v3.py` deriva do v2 (paleta Next).
