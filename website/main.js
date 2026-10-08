@@ -11,9 +11,9 @@
   const VERSION = "0.2.0";
   const RELEASE_BASE = `https://github.com/${REPO}/releases/download/v${VERSION}/`;
   const ALL_RELEASES = `https://github.com/${REPO}/releases`;
-  // Tauri bundle naming: productName sanitized to "VOXEL.Studio"
-  // (confirmed against the published release assets).
-  const PKG = "VOXEL.Studio";
+  // Tauri bundle naming: productName "VOXEL" (v0.2.0+ — assets are
+  // VOXEL_<version>_<arch>…; verified against the tauri.conf productName).
+  const PKG = "VOXEL";
 
   const DOWNLOADS = {
     windows: [
