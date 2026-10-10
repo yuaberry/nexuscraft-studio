@@ -28,10 +28,16 @@ jobs:
       - name: Install (mobile + core, hoisted layout)
         run: pnpm install --frozen-lockfile --filter @voxel/mobile
 
-      - name: Android SDK licenses + NDK (runner image ships the SDK)
+      - name: Android SDK (hosted runners no longer ship it)
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          yes | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125" > /dev/null
+          export ANDROID_HOME=$HOME/android-sdk
+          curl -sL -o /tmp/cmdtools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          unzip -q /tmp/cmdtools.zip -d $ANDROID_HOME/cmdline-tools
+          mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/latest
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME --licenses > /dev/null || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_HOME "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125" > /dev/null
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
 
       - name: Prebuild (natives) + pnpm workspace patches
         run: pnpm prebuild:android
@@ -40,8 +46,6 @@ jobs:
       - name: Build release APK
         run: ./gradlew assembleRelease --no-daemon
         working-directory: apps/mobile/android
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
