@@ -497,4 +497,6 @@ git log --oneline                   # 25+ commits
 
 **Verificação**: desktop 44/44 + 27/27 ✓ · vite build com hoisted ✓ · mobile tsc ✓ · `expo export` (bundle JS completo) ✓ · **APK apksigner/aapt ✓ publicado** · workflows verdes.
 
+**CI mobile-builds VERDE (ambos os jobs)**: `android-apk` 5m42s (APK artifact no CI — SDK auto-instalado pois as imagens hosted não trazem mais; alinhamento ANDROID_HOME/ANDROID_SDK_ROOT obrigatório) e `ios-archive` 11m47s (xcarchive unsigned). Bugs CI caçados: sdkmanager removido das imagens runner, conflito ANDROID_SDK_ROOT legado, xcworkspace nasce do pod install (não do prebuild), xcodebuild não expande globs.
+
 **Estado pós-sessão**: Android FUNCIONA hoje (baixa o APK, instala, pareia com o PC); iOS compila de verdade no CI e espera a conta Apple para assinar. Próximo: emulador/device test real, keystore de release própria (assinar pra distribuição séria), TestFlight quando houver conta.
