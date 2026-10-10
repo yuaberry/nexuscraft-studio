@@ -42,7 +42,7 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
 // Shared shapes (mirror the bridge; ping types shared with @voxel/core)
 // ---------------------------------------------------------------------------
 
-import type { ServerPingData } from "@voxel/core/serverPing";
+import type { ServerPingData } from "@voxel/core";
 
 export interface BridgeStatus {
   app: string;

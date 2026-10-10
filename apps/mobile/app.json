@@ -18,7 +18,9 @@
       "package": "dev.yuadevs.voxel.mobile"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-asset",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

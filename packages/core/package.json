@@ -12,5 +12,6 @@
     "./publicServers": "./src/publicServers.ts",
     "./inferStyle": "./src/inferStyle.ts",
     "./shaderStyleCatalog": "./src/shaderStyleCatalog.ts"
-  }
+  },
+  "main": "./src/index.ts"
 }

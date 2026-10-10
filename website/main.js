@@ -78,12 +78,14 @@
   const ua = navigator.userAgent;
   let os = "windows";
   if (/Mac|iPhone|iPad/i.test(ua)) os = "macos";
-  else if (/Linux|X11|CrOS/i.test(ua) && !/Android/i.test(ua)) os = "linux";
+  else if (/Android/i.test(ua)) os = "android";
+  else if (/Linux|X11|CrOS/i.test(ua)) os = "linux";
 
   const osLabels = {
     windows: "Download for Windows",
     macos: "Download for macOS",
     linux: "Download for Linux",
+    android: "Download for Android",
   };
   const heroLabel = document.getElementById("hero-download-label");
   const heroBtn = document.getElementById("hero-download");
@@ -91,10 +93,14 @@
     windows: `${PKG}_${VERSION}_x64-setup.exe`,
     macos: `${PKG}_${VERSION}_aarch64.dmg`,
     linux: `${PKG}_${VERSION}_amd64.AppImage`,
+    android: "VOXEL-mobile-0.1.0-android.apk",
   };
   if (heroLabel) heroLabel.textContent = osLabels[os];
   if (heroBtn) heroBtn.href = RELEASE_BASE + osCards[os];
-  const heroCard = document.querySelector(`.dl-card[data-os="${os}"]`);
+  const heroCard =
+    os === "android"
+      ? document.querySelector('.dl-card[data-os="android"]')
+      : document.querySelector(`.dl-card[data-os="${os}"]`);
   if (heroCard) heroCard.classList.add("is-hero");
 
   /* ---------- shader swatch grid ---------- */

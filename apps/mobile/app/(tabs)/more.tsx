@@ -7,7 +7,7 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useConnection } from "../../src/lib/store";
 import { colors } from "../../src/theme";
-import { APP_TAGLINE, LEGAL_DISCLAIMER } from "@voxel/core/constants";
+import { APP_TAGLINE, LEGAL_DISCLAIMER } from "@voxel/core";
 import { Badge, Card, SectionTitle, VButton } from "../../src/components/ui";
 
 export default function More() {

@@ -2,3 +2,7 @@ node_modules/
 .expo/
 dist/
 *.log
+
+# generated native projects (prebuild regenerates them)
+android/
+ios/
