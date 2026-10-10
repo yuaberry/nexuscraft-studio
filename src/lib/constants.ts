@@ -1,8 +1,9 @@
-export const APP_NAME = "VOXEL";
-export const APP_TAGLINE = "Imagine. Create. Build. Play.";
-export const APP_DESCRIPTION = "AI-Powered Creation Platform";
-export const LEGAL_DISCLAIMER =
-  "VOXEL is an independent third-party creation platform and is not affiliated with Mojang Studios or Microsoft.";
+export {
+  APP_NAME,
+  APP_TAGLINE,
+  APP_DESCRIPTION,
+  LEGAL_DISCLAIMER,
+} from "@voxel/core/constants";
 
 export const STORAGE_SUBDIRS = [
   "projects",
@@ -10,6 +11,7 @@ export const STORAGE_SUBDIRS = [
   "servers",
   "backups",
   "logs",
+  "shaderpacks",
   ".gradle-cache",
 ] as const;
 

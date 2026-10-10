@@ -4,7 +4,7 @@ import {
   SHADER_STYLES,
   getShaderStyle,
   validateStyleParams,
-} from "./shaderStyleCatalog";
+} from "@voxel/core/shaderStyleCatalog";
 
 describe("shader style catalog", () => {
   it("has all 32 iconic style presets", () => {

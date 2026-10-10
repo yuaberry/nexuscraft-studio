@@ -11,7 +11,8 @@
  * exposes, triggers and logs.
  */
 
-export type ServerModuleId = "economy" | "prison" | "token";
+import type { ServerModuleId } from "@voxel/core/serverPresets";
+export type { ServerModuleId };
 
 export interface ServerModuleMeta {
   id: ServerModuleId;

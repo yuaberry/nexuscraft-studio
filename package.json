@@ -44,7 +44,8 @@
     "remark-gfm": "^4.0.1",
     "sonner": "^1.7.2",
     "tailwind-merge": "^2.6.0",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "@voxel/core": "workspace:*"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.12.0",

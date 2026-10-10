@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { MC_COLORS, parseMotd, parseLegacyMotd, parseComponentMotd } from "./motd";
-import { parseServerAddress, type ServerPingData } from "./serverPingService";
+import { MC_COLORS, parseMotd, parseLegacyMotd, parseComponentMotd } from "@voxel/core/motd";
+import { parseServerAddress, type ServerPingData } from "@voxel/core/serverPing";
 import {
   SERVER_STYLE_PRESETS,
   getServerPreset,
-} from "./serverPresets";
-import { PUBLIC_SERVER_REFS } from "./publicServers";
-import { describePing, inferPresetFromPing, designStyleWithAi } from "./inferStyle";
+} from "@voxel/core/serverPresets";
+import { PUBLIC_SERVER_REFS } from "@voxel/core/publicServers";
+import { describePing, inferPresetFromPing, designStyleWithAi } from "@voxel/core/inferStyle";
 
 function fakePing(over: Partial<ServerPingData> = {}): ServerPingData {
   return {

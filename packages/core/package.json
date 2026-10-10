@@ -1,0 +1,16 @@
+{
+  "name": "@voxel/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./constants": "./src/constants.ts",
+    "./motd": "./src/motd.ts",
+    "./serverPing": "./src/serverPing.ts",
+    "./serverPresets": "./src/serverPresets.ts",
+    "./publicServers": "./src/publicServers.ts",
+    "./inferStyle": "./src/inferStyle.ts",
+    "./shaderStyleCatalog": "./src/shaderStyleCatalog.ts"
+  }
+}
