@@ -52,7 +52,7 @@ jobs:
           workspaces: src-tauri -> target
 
       - name: Install frontend
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter voxel --filter @voxel/core
 
       - name: Build release
         uses: tauri-apps/tauri-action@v0

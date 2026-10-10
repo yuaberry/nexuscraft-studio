@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "VOXEL",
+    "slug": "voxel",
+    "scheme": "voxel",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#050609",
+    "splash": {
+      "backgroundColor": "#050609"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.yuadevs.voxel.mobile"
+    },
+    "android": {
+      "package": "dev.yuadevs.voxel.mobile"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "icon": "./assets/icon.png"
+  }
+}
