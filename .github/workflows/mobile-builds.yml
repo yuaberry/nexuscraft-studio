@@ -28,8 +28,10 @@ jobs:
       - name: Install (mobile + core, hoisted layout)
         run: pnpm install --frozen-lockfile --filter @voxel/mobile
 
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Android SDK licenses + NDK (runner image ships the SDK)
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          yes | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125" > /dev/null
 
       - name: Prebuild (natives) + pnpm workspace patches
         run: pnpm prebuild:android
@@ -76,7 +78,9 @@ jobs:
 
       - name: Archive (unsigned — sign with your Apple certs afterwards)
         run: |
-          xcodebuild -workspace ios/*.xcworkspace \
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -1)
+          echo "Archiving $WORKSPACE"
+          xcodebuild -workspace "$WORKSPACE" \
             -scheme VOXEL \
             -configuration Release \
             -destination 'generic/platform=iOS' \
