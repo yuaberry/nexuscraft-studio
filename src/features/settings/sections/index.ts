@@ -7,4 +7,5 @@ export { JavaSettings } from "./JavaSettings";
 export { LauncherSettings } from "./LauncherSettings";
 export { StorageSettings } from "./StorageSettings";
 export { SecuritySettings } from "./SecuritySettings";
+export { MobileSettings } from "./MobileSettings";
 export { AdvancedSettings } from "./AdvancedSettings";

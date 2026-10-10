@@ -8,6 +8,7 @@ import {
   JavaSettings,
   LauncherSettings,
   MinecraftSettings,
+  MobileSettings,
   SecuritySettings,
   StorageSettings,
 } from "./sections";
@@ -20,6 +21,7 @@ export const SETTINGS_SECTIONS = [
   { id: "minecraft", label: "Minecraft" },
   { id: "java", label: "Java" },
   { id: "launcher", label: "Launcher" },
+  { id: "mobile", label: "Mobile" },
   { id: "github", label: "GitHub" },
   { id: "storage", label: "Storage" },
   { id: "security", label: "Security" },
@@ -72,6 +74,7 @@ export function SettingsPage() {
           {active === "launcher" && <LauncherSettings />}
           {active === "github" && <GithubSettings />}
           {active === "storage" && <StorageSettings />}
+          {active === "mobile" && <MobileSettings />}
           {active === "security" && <SecuritySettings />}
           {active === "advanced" && <AdvancedSettings />}
         </div>
