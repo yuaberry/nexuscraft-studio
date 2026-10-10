@@ -393,7 +393,7 @@ git log --oneline                   # 25+ commits
 
 ---
 
-*Última atualização: Sessão 18 — MOBILE entregue (Phase B): @voxel/core compartilhado, VOXEL Bridge real no desktop (token+axum: builds, servidores, console ring, SLP, AI relay com key no PC) e app Expo SDK 51 com 5 abas e pairing verificado. Desktop release v0.3.1 com o Bridge embutido. Próximo: EAS APK, secure-store, testes em device.
+*Última atualização: Sessão 19 — Executáveis: APK Android REAL publicado na release v0.3.1 (64MB, sideload ok, label VOXEL) + pipeline iOS (xcarchive unsigned no CI, assinável com conta Apple). Guerra do build documentada (pnpm hoisted, Metro exports, patches). Site com seção mobile. Próximo: testes em device, keystore release, TestFlight.
 
 ---
 
@@ -471,3 +471,30 @@ git log --oneline                   # 25+ commits
 **Não feito nesta sessão (honesto)**: APK/AAB real (precisa EAS build ou Android SDK — documentado como próximo passo); push notifications (§62 → Phase F); biometrics (§59 → com o secure storage upgrade).
 
 **Estado pós-sessão**: mobile arquitetura completa e funcional via pairing; próximo: EAS build do APK, secure-store do token, e o runtime test com device real.
+
+---
+
+## 19. Sessão 19 — EXECUTÁVEIS: Android APK real + pipeline iOS
+
+**Pedido do dono**: "me crie o arquivo executável (aplicativo) para android, IOS e outros sistemas operacionos. que funcione."
+
+**Android APK — REAL, instalável, publicado**:
+- Android SDK + NDK 26.1 instalados localmente (cmdline-tools oficiais, licenças aceitas); `expo prebuild -p android` → Gradle `assembleRelease` → **BUILD SUCCESSFUL 17m19s (523 tasks)**
+- **`VOXEL-mobile-0.1.0-android.apk` (64MB, debug-signed = sideload ok, minSdk 23/Android 6+, label VOXEL, `dev.yuadevs.voxel.mobile` v0.1.0)** — validado por `apksigner verify` + `aapt badging` e **publicado na release v0.3.1** (link HTTP 206)
+
+**Guerra do build (5 bugs caçados, todos com causa raiz)**:
+1. settings.gradle do template resolve `@react-native/*` do `rootDir` (android/, sem node_modules) e sem paths-trick → **`scripts/patch-android-gradle.cjs`** (sobrevive ao prebuild, chamado por `pnpm prebuild:android`)
+2. pnpm 12 removeu `public-hoist-pattern` — `.npmrc` inócuo → settings do pnpm 12 vivem no **pnpm-workspace.yaml**: `nodeLinker: hoisted` (layout documentado da Expo p/ RN; desktop continua verde com o layout flat)
+3. processos filhos morrendo com o fim do shell → **setsid** para o gradle
+4. deps do template SDK 51 incompletas na minha lista manual → `npx expo install` (expo-asset@10, expo-font@12, expo-system-ui@3)
+5. **Metro não lê subpath-exports** → `main: ./src/index.ts` no core + imports barrel no mobile (tsc/vite continuam nos subpaths; CI mobile segue verde)
+
+**iOS — pipeline real, honesto**: `mobile-builds.yml` job macOS: prebuild (com pod install) → `xcodebuild archive` unsigned (`CODE_SIGNING_ALLOWED=NO`) → artifact `VOXEL-ios-unsigned.xcarchive.zip`. **Instalar em iPhone exige assinatura com certificado Apple Developer** — o xcarchive está pronto para o dono assinar (TestFlight/App Store); nota honesta no site.
+
+**Site**: seção "VOXEL in your pocket" — card Android com link direto do APK, card iOS honesto (Actions + assinatura), hero detecta Android e aponta o APK.
+
+**CI**: `mobile-builds.yml` (dispatch + tags `mobile-v*`: APK em artifact, attach automático em releases; iOS archive em artifact) + jobs desktop/mobile-typecheck todos verdes com o layout hoisted.
+
+**Verificação**: desktop 44/44 + 27/27 ✓ · vite build com hoisted ✓ · mobile tsc ✓ · `expo export` (bundle JS completo) ✓ · **APK apksigner/aapt ✓ publicado** · workflows verdes.
+
+**Estado pós-sessão**: Android FUNCIONA hoje (baixa o APK, instala, pareia com o PC); iOS compila de verdade no CI e espera a conta Apple para assinar. Próximo: emulador/device test real, keystore de release própria (assinar pra distribuição séria), TestFlight quando houver conta.
