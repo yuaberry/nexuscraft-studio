@@ -72,8 +72,12 @@ jobs:
       - name: Install (mobile + core, hoisted layout)
         run: pnpm install --frozen-lockfile --filter @voxel/mobile
 
-      - name: Prebuild iOS natives (incl. pod install)
+      - name: Prebuild iOS natives
         run: pnpm prebuild:ios
+        working-directory: apps/mobile
+
+      - name: CocoaPods install (creates the .xcworkspace)
+        run: (cd ios && pod install)
         working-directory: apps/mobile
 
       - name: Archive (unsigned — sign with your Apple certs afterwards)
