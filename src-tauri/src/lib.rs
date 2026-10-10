@@ -97,6 +97,10 @@ pub fn run() {
             commands::shaders::shaders_install_pack,
             commands::shaders::shaders_list_instances,
             commands::serverping::server_ping,
+            commands::bridge::bridge_start,
+            commands::bridge::bridge_stop,
+            commands::bridge::bridge_status,
+            commands::bridge::bridge_set_ai_config,
         ])
         .setup(|app| {
             // Ensure the app-config dir exists before the SQL plugin tries to
