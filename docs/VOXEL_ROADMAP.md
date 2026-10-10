@@ -42,7 +42,12 @@
 - App/site/docs rebrand; `.voxel/` memory; `~/VOXEL` default (legacy-safe);
   repo + release `v0.2.0` as VOXEL; audit/roadmap/opencode docs.
 
-### Phase B — Core platform extraction (when mobile work starts)
+### Phase B — Core platform extraction ✅ (Sessão 18)
+- [x] `packages/core` from pure services (catalog, presets, motd/slp, spec)
+- [x] `apps/desktop` (Tauri) + `apps/mobile` (Expo SDK 51 — Node 18 compatible)
+- [x] VOXEL Bridge: real HTTP API (token pairing) — builds, servers, console, SLP, AI relay
+- [ ] Mobile MVP polish (§103): EAS APK build, secure token storage, device runtime tests
+- [ ] `.agents/` specialization files (§108) + Model Router (§66)
 - `packages/core` from pure services (catalog, presets, motd/slp, spec)
 - `apps/desktop` (Tauri) + `apps/mobile` (React Native/Expo — §6/§54)
 - Mobile MVP scope (§103): dashboard, AI chat, server control, notifications

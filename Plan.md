@@ -393,7 +393,7 @@ git log --oneline                   # 25+ commits
 
 ---
 
-*Última atualização: Sessão 17 — VOXEL “Next” skin: reskin completo do app (tokens, aurora, voxel grid, sidebar glow, splash, Monaco voxel-dark, ícone v3) e do site, zero funcionalidade tocada — 44/44 vitest, 27/27 cargo, boot vivo. v0.3.0 tagged (release multi-OS). Próximo: Fases B+ do VOXEL_ROADMAP (mobile/packages, Forge/NeoForge, multi-agent).
+*Última atualização: Sessão 18 — MOBILE entregue (Phase B): @voxel/core compartilhado, VOXEL Bridge real no desktop (token+axum: builds, servidores, console ring, SLP, AI relay com key no PC) e app Expo SDK 51 com 5 abas e pairing verificado. Desktop release v0.3.1 com o Bridge embutido. Próximo: EAS APK, secure-store, testes em device.
 
 ---
 
@@ -446,3 +446,28 @@ git log --oneline                   # 25+ commits
 **Publicação**: v0.3.0 (package/tauri.conf/Cargo.toml/About/site) → tag **v0.3.0** → release multi-OS com o ícone Next. Site: screenshot de validação capturado.
 
 **Decisão**: tema Monaco renomeável (interno); classes CSS mantidas por design (reskin sem tocar JSX do site); `generate_icon_v3.py` deriva do v2 (paleta Next).
+
+---
+
+## 18. Sessão 18 — MOBILE: VOXEL Bridge + Expo app (Roadmap Phase B)
+
+**Pedido do dono**: "avançe com o mobile… mesma experiência de um de PC, com a mesma qualidade, com preferência de jogos mobile."
+
+**Arquitetura escolhida (§7 do briefing: não forçar Tauri no mobile)**:
+1. **`packages/core`** (pnpm workspace) — extração da camada PURA compartilhável: MOTD parser, address parsing + SLP types, 10 server presets, referências públicas, inferência de estilo (com AI sanitize), catálogo dos 32 shaders, constantes de marca. Testes movidos junto; desktop consome via **barrels** (zero churn em features); `vitest.config` na root cobre `packages/core` — CI continua num runner só.
+
+2. **VOXEL Bridge (Rust/axum no desktop)** — a peça central: o celular controla a MESMA engine real do PC. Opt-in via Settings → Mobile, **token bearer de 8 chars** por sessão, rotas allowlisted, CORS p/ debug web. Endpoints: `/api/status` (stats reais do workspace), `/api/projects` (+ `POST /:slug/build` = o MESMO command allowlistado do botão Build), `/api/servers` (+ start/stop com o stop world-safe via stdin), `/api/servers/:slug/console/tail` (**ring buffer de 1000 linhas/slug** alimentado pelos eventos tauri — mobile faz polling pois o fetch do RN não faz streaming), `/api/ping` (SLP real pela rede do PC), `/api/ai/chat` (SSE) + `/api/ai/ask` (one-shot p/ mobile). **A API key NUNCA sai do PC** — o bridge lê do keyring e faz as chamadas (dialétos OpenAI-compat/Anthropic/Ollama).
+
+3. **`apps/mobile`** (Expo SDK 51 + expo-router)** — bottom nav própria §10 (Home/Create/Projects/Servers/More), skin Next (bg #050609, violeta elétrico, glow). Telas: **Connect** (pairing verificado contra /status), **Home play-first** (stats ao vivo, servidores online, AI chip), **Create** (chat com a IA do PC — "AI working…"), **Projects** (linhas reais + Build on PC), **Servers** (start/stop + console live), **More** (conexão/about/legal). Metro config p/ workspace (`watchFolders` p/ packages/core). **SDK 51 por causa do Node 18** (SDK 52+ exige Node 20) — documentado; upgrade do SDK quando o Node subir.
+
+4. **Settings → Mobile no desktop**: toggle bridge, endereço + token, status do relay AI.
+
+**Decisões técnicas da sessão**: `expo/fetch` NÃO existe no SDK 51 (só 52+) → console vira **ring buffer + polling** e AI vira **ask one-shot** (igualmente reais; SSE chat fica p/ clients com streaming). `sceneStyle`/`sceneContainerStyle` não existem no bottom-tabs do SDK 51 → fundo vem do Stack root. Node 18 bloqueou create-expo-app novo → app criado à mão com deps pinadas.
+
+**Workflows**: `mobile.yml` (typecheck mobile + core tests, paths-filtered); `ci.yml`/`release.yml` com `--filter voxel --filter @voxel/core` (runners desktop nunca baixam deps do mobile).
+
+**Verificação**: typecheck desktop ✓ · lint 0 errors ✓ · **vitest 44/44** (incl. core movido) ✓ · **cargo 27/27** ✓ (bridge compila limpo) · **vite build** resolve @voxel/core via workspace ✓ · **boot vivo com o bridge dentro, 0 panics** ✓ · **mobile `tsc --noEmit` PASSA** ✓.
+
+**Não feito nesta sessão (honesto)**: APK/AAB real (precisa EAS build ou Android SDK — documentado como próximo passo); push notifications (§62 → Phase F); biometrics (§59 → com o secure storage upgrade).
+
+**Estado pós-sessão**: mobile arquitetura completa e funcional via pairing; próximo: EAS build do APK, secure-store do token, e o runtime test com device real.

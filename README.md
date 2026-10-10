@@ -103,6 +103,14 @@ Decisões-chave no [`docs/architecture.md`](docs/architecture.md) (AD-1..AD-11 +
 | CI (`.github/workflows/ci.yml`) | typecheck + lint + vitest + vite build + cargo test |
 | Release (`.github/workflows/release.yml`) | tag `v*` → .exe/.msi/.deb/.AppImage/.dmg (Windows, Linux, macOS arm64+x64) |
 
+## 📱 Mobile
+
+O **VOXEL mobile** (Expo, este repositório: `apps/mobile`) emparelha com o
+seu PC via **Settings → Mobile**: o celular controla a MESMA engine real —
+projetos com build status (Gradle de verdade), servidores com start/stop e
+console ao vivo, ping SLP de qualquer endereço e chat com a IA configurada
+no PC (a key nunca sai da máquina). Lógica compartilhada em `packages/core`.
+
 ## Roadmap pós-MVP (próximas waves)
 
 - **Modpack Creator** — seleção, resolução de dependências, Compatibility Score
